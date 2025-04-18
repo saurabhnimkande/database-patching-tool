@@ -194,53 +194,46 @@ export default class PatchingManager {
    * Retrieves all table names from the PostgreSQL database schema.
    *
    * This function queries the `information_schema.tables` to get a list of all tables
-   * within the `public` schema and returns them in alphabetical order.
+   * within the specified schema and returns them in alphabetical order.
    *
    * @async
    * @param {Object} params - The parameters object.
    * @param {Object} params.client - The database client used to execute the query.
+   * @param {Object} params.config - Configuration options for filtering tables.
+   * @param {Array<string>} params.config.ignoredTables - List of tables to exclude.
+   * @param {Array<string>} params.config.likePatterns - List of patterns to match against table names.
+   * @param {string} params.config.schema - The schema name to query (defaults to this.tableSchema).
    *
    * @returns {Promise<Array<Object>>} A promise that resolves to an array of objects, where each object contains:
-   * - `table_schema` (string): The schema name (typically `public`).
+   * - `table_schema` (string): The schema name.
    * - `table_name` (string): The name of the table.
    */
-  async getAllTables({ client }) {
+  async getAllTables({ client, config = {} }) {
     if (!client.executeQuery) return [];
 
-    // this is done temporarily will be fixed later hardcoded sql and tables
-    let ignoredTables = [
-      "key_vault",
-      "mtd_invoice_amt",
-      "wf_setup_config",
-      "fntl_test",
-      "fntl_project_snapshot_bak",
-      "fntl_project_snapshot_test",
-      "fntl_sup_req_details",
-      "fntl_planning_resource_exportcsv",
-      "fntl_org_configurations_new",
-      "fntl_opportunities_test",
-      "fntl_opportunities_new_bkp",
-      "fntl_opportunities_new",
-      "fntl_json_objects_backup",
-      "himanshu_temptable",
-      "hk_fntl_project_snapshot",
-      "test",
-      "test_sql",
-      "zz_fntl_oic_dlq_runs",
-      "fntl_plan_lines_2",
-      "fntl_plan_lines_tmp_13082024",
-      "fntl_organizations_23_jul_bkup",
-      "fntl_periods_march5",
-      "hk_tmp_load_data",
-      "fntl_cost_lines1",
-    ];
+    const {
+      ignoredTables = [],
+      likePatterns = [],
+      schema = this.tableSchema
+    } = config;
+
+    let whereConditions = [`schemaname = '${schema}'`];
+    
+    // Add ignored tables condition if any tables are specified
+    if (ignoredTables.length > 0) {
+      whereConditions.push(`tablename NOT IN (${ignoredTables.map(table => `'${table}'`).join(',')})`);
+    }
+
+    // Add like pattern conditions if any patterns are specified
+    if (likePatterns.length > 0) {
+      whereConditions.push(likePatterns.map(pattern => `tablename NOT LIKE '${pattern}'`).join(' AND '));
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
     let sql = `SELECT schemaname, tablename
     FROM pg_catalog.pg_tables
-    WHERE schemaname = '${
-      this.tableSchema
-    }' and tablename not like 'tmp_%' and tablename not like 'demo_%' and tablename not like 'temp_%' and tablename not like 'tenant_1%' and tablename not like '%_bkp_%' and tablename not like '%_60' and tablename not in (${ignoredTables
-      .map((el) => `'${el}'`)
-      .join(",")})
+    ${whereClause}
     ORDER BY schemaname, tablename;`;
 
     let response = await client.executeQuery(sql);
@@ -954,7 +947,7 @@ export default class PatchingManager {
    * @description
    * This function builds a dependency graph from the input `tables`, where each table
    * is a node, and edges represent foreign key references. It then performs a
-   * topological sort using Kahn’s algorithm (BFS) to determine the correct order
+   * topological sort using Kahn's algorithm (BFS) to determine the correct order
    * for table creation, ensuring referenced tables are created before dependents.
    */
   #orderTables(tables) {

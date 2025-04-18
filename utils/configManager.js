@@ -2,91 +2,175 @@ import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
 
-const CONFIG_DIR = path.join(os.homedir(), ".pace-patching-tool-cli");
-const CREDS_CONFIG_FILE = path.join(CONFIG_DIR, "creds_config.json");
-const PATH_CONFIG_FILE = path.join(CONFIG_DIR, "path_config.json");
+const CONFIG_DIR = path.join(os.homedir(), ".database-patching-tool-cli");
+const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
-// Helper: Ensure config dir & file exist
-async function ensureConfigFile(filePath) {
+/**
+ * Ensures the config directory and file exist
+ * @private
+ */
+async function ensureConfigFile() {
   await fs.mkdir(CONFIG_DIR, { recursive: true });
 
   try {
-    await fs.access(filePath);
+    await fs.access(CONFIG_FILE);
   } catch {
-    // Create an empty JSON object if file doesn't exist
-    await fs.writeFile(filePath, JSON.stringify({}, null, 2));
+    // Create default config structure if file doesn't exist
+    const defaultConfig = {
+      db_creds: {},
+      paths: {},
+      schemaname: ''
+    };
+    await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
   }
 }
 
-// Helper: Read config JSON
-async function readConfig(filePath) {
-  await ensureConfigFile(filePath);
-  const data = await fs.readFile(filePath, "utf-8");
+/**
+ * Reads the config file and returns its contents
+ * @private
+ * @returns {Promise<Object>} The config object
+ */
+async function readConfig() {
+  await ensureConfigFile();
+  const data = await fs.readFile(CONFIG_FILE, "utf-8");
   return JSON.parse(data);
 }
 
-// Helper: Write config JSON
-async function writeConfig(data, filePath) {
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+/**
+ * Writes data to the config file
+ * @private
+ * @param {Object} data - The data to write
+ */
+async function writeConfig(data) {
+  await fs.writeFile(CONFIG_FILE, JSON.stringify(data, null, 2));
 }
 
-// Save a credential to specific env (e.g., "dev_env")
+/**
+ * Saves database credentials for a specific environment
+ * @param {string} env - The environment name (e.g., 'dev', 'prod')
+ * @param {Object} value - The credentials object
+ */
 export async function saveCreds(env, value) {
-  const config = await readConfig(CREDS_CONFIG_FILE);
-  if (!config[env]) config[env] = {};
-  config[env] = value;
-  await writeConfig(config, CREDS_CONFIG_FILE);
+  const config = await readConfig();
+  config.db_creds[env] = value;
+  await writeConfig(config);
 }
 
-// Save path for the files/directory
-export async function savePath(objectName, value) {
-  const config = await readConfig(PATH_CONFIG_FILE);
-  if (!config[objectName]) config[objectName] = "";
-  config[objectName] = value;
-  await writeConfig(config, PATH_CONFIG_FILE);
+/**
+ * Saves a path configuration
+ * @param {string} pathName - The name of the path configuration
+ * @param {string} value - The path value
+ */
+export async function savePath(pathName, value) {
+  const config = await readConfig();
+  config.paths[pathName] = value;
+  await writeConfig(config);
 }
 
-// Fetch the credentials for specific env
-export async function getCreds(key, type) {
-  const config = await readConfig(type === "creds" ? CREDS_CONFIG_FILE : PATH_CONFIG_FILE);
-  return config[key] ? config[key] : null;
+/**
+ * Saves the database schema name configuration
+ * @param {string} schema - The schema name
+ */
+export async function saveSchemaName(schema) {
+  const config = await readConfig();
+  config.schemaname = schema;
+  await writeConfig(config);
 }
 
-// Check if a key exists under a specific env
-export async function keyExists(env) {
-  const config = await readConfig(CREDS_CONFIG_FILE);
-  return config[env] ? true : false;
+/**
+ * Retrieves database credentials for a specific environment
+ * @param {string} env - The environment name
+ * @returns {Promise<Object|null>} The credentials object or null if not found
+ */
+export async function getCreds(env) {
+  const config = await readConfig();
+  return config.db_creds[env] || null;
 }
 
-// Delete a single key from a specific env
-export async function deleteCred(env) {
-  const config = await readConfig(CREDS_CONFIG_FILE);
-  if (config[env]) {
-    delete config[env];
-    await writeConfig(config, CREDS_CONFIG_FILE);
+/**
+ * Retrieves a path configuration
+ * @param {string} pathName - The name of the path configuration
+ * @returns {Promise<string|null>} The path value or null if not found
+ */
+export async function getPath(pathName) {
+  const config = await readConfig();
+  return config.paths[pathName] || null;
+}
+
+/**
+ * Retrieves the database schema name configuration
+ * @returns {Promise<string>} The schema name
+ */
+export async function getSchemaName() {
+  const config = await readConfig();
+  return config.schemaname;
+}
+
+/**
+ * Checks if credentials exist for a specific environment
+ * @param {string} env - The environment name
+ * @returns {Promise<boolean>} True if credentials exist
+ */
+export async function credsExist(env) {
+  const config = await readConfig();
+  return !!config.db_creds[env];
+}
+
+/**
+ * Deletes credentials for a specific environment
+ * @param {string} env - The environment name
+ */
+export async function deleteCreds(env) {
+  const config = await readConfig();
+  if (config.db_creds[env]) {
+    delete config.db_creds[env];
+    await writeConfig(config);
   }
 }
 
-// Delete a single key from a specific objectName
-export async function deletePath(objectName) {
-  const config = await readConfig(PATH_CONFIG_FILE);
-  if (config[objectName]) {
-    delete config[objectName];
-    await writeConfig(config, PATH_CONFIG_FILE);
+/**
+ * Deletes a path configuration
+ * @param {string} pathName - The name of the path configuration
+ */
+export async function deletePath(pathName) {
+  const config = await readConfig();
+  if (config.paths[pathName]) {
+    delete config.paths[pathName];
+    await writeConfig(config);
   }
 }
 
-// Delete all credentials (reset config)
+/**
+ * Deletes all database credentials
+ */
 export async function deleteAllCreds() {
-  await writeConfig({}, CREDS_CONFIG_FILE);
+  const config = await readConfig();
+  config.db_creds = {};
+  await writeConfig(config);
 }
 
-// Delete all paths (reset config)
+/**
+ * Deletes all path configurations
+ */
 export async function deleteAllPaths() {
-  await writeConfig({}, PATH_CONFIG_FILE);
+  const config = await readConfig();
+  config.paths = {};
+  await writeConfig(config);
 }
 
-// Get the full config (optional helper)
-export async function getConfig(type) {
-  return await readConfig(type === "creds" ? CREDS_CONFIG_FILE : PATH_CONFIG_FILE);
+/**
+ * Deletes the database schema name configuration
+ */
+export async function deleteSchemaName() {
+  const config = await readConfig();
+  config.schemaname = '';
+  await writeConfig(config);
+}
+
+/**
+ * Retrieves the entire configuration
+ * @returns {Promise<Object>} The complete config object
+ */
+export async function getConfig() {
+  return await readConfig();
 }
