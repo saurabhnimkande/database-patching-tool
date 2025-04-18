@@ -1,14 +1,14 @@
 import DB from "./db.js";
 
 export default class PatchingManager {
-  constructor({ tableSchema }) {
+  constructor({ schemaName }) {
     this.client1 = {};
     this.client2 = {};
     this.tableMetadata = {};
     this.seedingConfigMetadata = {};
     this.tableName = "";
     this.constraintData = { unique: [], primary: [] };
-    this.tableSchema = tableSchema;
+    this.schemaName = schemaName;
     // eslint-disable-next-line no-undef
     this.startTime = process.hrtime();
   }
@@ -26,15 +26,16 @@ export default class PatchingManager {
    * @param {number} options.creds1.port - Port number for the source database.
    * @param {boolean} [options.creds1.ssl=true] - Optional SSL configuration (default is `true`).
    *
-   * @param {Object} options.creds2 - Credentials for the target database (`client2`).
-   * @param {string} options.creds2.user - Database username.
-   * @param {string} options.creds2.host - Host address of the target database.
-   * @param {string} options.creds2.database - Name of the target database.
-   * @param {string} options.creds2.password - Password for the target database.
-   * @param {number} options.creds2.port - Port number for the target database.
+   * @param {Object} [options.creds2] - Optional credentials for the target database (`client2`).
+   * @param {string} [options.creds2.user] - Database username.
+   * @param {string} [options.creds2.host] - Host address of the target database.
+   * @param {string} [options.creds2.database] - Name of the target database.
+   * @param {string} [options.creds2.password] - Password for the target database.
+   * @param {number} [options.creds2.port] - Port number for the target database.
    * @param {boolean} [options.creds2.ssl=true] - Optional SSL configuration (default is `true`).
    */
   async setUpDB({ creds1, creds2 }) {
+    // Set up the first client (required)
     this.client1 = new DB({
       user: creds1.user,
       host: creds1.host,
@@ -46,7 +47,8 @@ export default class PatchingManager {
 
     await this.client1.startTransaction();
 
-    if (creds2 !== undefined) {
+    // Set up the second client (optional)
+    if (creds2) {
       this.client2 = new DB({
         user: creds2.user,
         host: creds2.host,
@@ -57,7 +59,7 @@ export default class PatchingManager {
       });
 
       await this.client2.startTransaction();
-    }
+    } 
   }
 
   /**
@@ -124,7 +126,7 @@ export default class PatchingManager {
     if (!client.executeQuery) return [];
     let sql = `SELECT column_name, data_type, udt_name, character_maximum_length, numeric_precision, numeric_scale, is_nullable, column_default, pg_get_serial_sequence($1, column_name) AS serial_sequence
     FROM information_schema.columns
-    WHERE table_name = $1 AND table_schema = '${this.tableSchema}'
+    WHERE table_name = $1 AND table_schema = '${this.schemaName}'
     ORDER BY ordinal_position;`;
 
     let response = await client.executeQuery(sql, [this.tableName]);
@@ -157,7 +159,7 @@ export default class PatchingManager {
     JOIN pg_class t on c.conrelid = t.oid
     JOIN pg_namespace n on n.oid = t.relnamespace
     WHERE t.relname = $1
-	  AND n.nspname = '${this.tableSchema}';`;
+	  AND n.nspname = '${this.schemaName}';`;
 
     let response = await client.executeQuery(sql, [this.tableName]);
     return response && response.rows ? response.rows : [];
@@ -184,7 +186,7 @@ export default class PatchingManager {
     let sql = `SELECT indexname AS index_name, indexdef AS index_definition
     FROM pg_indexes
     WHERE tablename = $1
-    AND schemaname = '${this.tableSchema}';`;
+    AND schemaname = '${this.schemaName}';`;
 
     let response = await client.executeQuery(sql, [this.tableName]);
     return response && response.rows ? response.rows : [];
@@ -202,7 +204,7 @@ export default class PatchingManager {
    * @param {Object} params.config - Configuration options for filtering tables.
    * @param {Array<string>} params.config.ignoredTables - List of tables to exclude.
    * @param {Array<string>} params.config.likePatterns - List of patterns to match against table names.
-   * @param {string} params.config.schema - The schema name to query (defaults to this.tableSchema).
+   * @param {string} params.config.schema - The schema name to query (defaults to this.schemaName).
    *
    * @returns {Promise<Array<Object>>} A promise that resolves to an array of objects, where each object contains:
    * - `table_schema` (string): The schema name.
@@ -214,7 +216,7 @@ export default class PatchingManager {
     const {
       ignoredTables = [],
       likePatterns = [],
-      schema = this.tableSchema
+      schema = this.schemaName
     } = config;
 
     let whereConditions = [`schemaname = '${schema}'`];
@@ -279,7 +281,7 @@ export default class PatchingManager {
     if (!client.executeQuery) return [];
     let sql = `SELECT *
     FROM pg_sequences
-    WHERE schemaname = '${this.tableSchema}' AND sequencename = $1;`;
+    WHERE schemaname = '${this.schemaName}' AND sequencename = $1;`;
 
     let response = await client.executeQuery(sql, [sequenceName]);
     return response && response.rows ? response.rows : [];
@@ -298,7 +300,7 @@ export default class PatchingManager {
     FROM information_schema.views
     WHERE table_schema = $1;`;
 
-    let response = await client.executeQuery(sql, [this.tableSchema]);
+    let response = await client.executeQuery(sql, [this.schemaName]);
     return response && response.rows ? response.rows : [];
   }
 
@@ -993,15 +995,15 @@ export default class PatchingManager {
 
   /**
    * Modifies an SQL index definition to ensure it includes "IF NOT EXISTS"
-   * and removes the "public." schema reference.
+   * and removes the "${this.schemaName}." schema reference.
    *
    * @param {string} idxDef - The original SQL index definition.
    * @returns {string} - The modified SQL index definition with "IF NOT EXISTS"
-   * added and "public." removed.
+   * added and "${this.schemaName}." removed.
    */
   #resolveIndexDefinition(idxDef) {
     let newStr = idxDef;
-    newStr = newStr.replaceAll("public.", "");
+    newStr = newStr.replaceAll(`${this.schemaName}.`, "");
     newStr = newStr.replace("CREATE UNIQUE INDEX", "CREATE UNIQUE INDEX IF NOT EXISTS");
     newStr = newStr.replace("CREATE INDEX", "CREATE INDEX IF NOT EXISTS");
     return newStr;

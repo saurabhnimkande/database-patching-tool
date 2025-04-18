@@ -32,14 +32,14 @@ import path from "path";
  * @param {Object} options.creds1 - Database credentials for DB1.
  * @param {Object} options.creds2 - Database credentials for DB2.
  */
-export default async function patchAllTablesSchema({ tableSchema, fileFormat, creds1, creds2, exportDir }) {
+export default async function patchAllTablesSchema({ schemaName, fileFormat, creds1, creds2, exportDir }) {
   let client1 = {}; // qa client
   let client2 = {}; // demo client
   let mergeStatements = "";
   let createStatements = "";
   let tablesStore = {};
   try {
-    const patchingManager = new PatchingManager({ tableSchema });
+    const patchingManager = new PatchingManager({ schemaName });
     await patchingManager.setUpDB({ creds1, creds2 });
     client1 = patchingManager.getClient1();
     client2 = patchingManager.getClient2();

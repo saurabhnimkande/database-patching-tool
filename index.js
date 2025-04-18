@@ -24,7 +24,7 @@ program
   });
 
 program
-  .command("start")
+  .command("patch")
   .description("Start the database patching process")
   .action(() => {
     actionPrompt();

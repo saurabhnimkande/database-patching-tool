@@ -2,12 +2,12 @@ import fs from "fs";
 import PatchingManager from "../../utils/PatchingManager.js";
 import path from "path";
 
-export default async function patchAllViews({ tableSchema, sourceFilePath, creds1, creds2, exportDir }) {
+export default async function patchAllViews({ schemaName, sourceFilePath, creds1, creds2, exportDir }) {
   let client1 = {}; // qa client
   let client2 = {}; // demo client
 
   try {
-    const patchingManager = new PatchingManager({ tableSchema });
+    const patchingManager = new PatchingManager({ schemaName });
     await patchingManager.setUpDB({ creds1, creds2 });
     client1 = patchingManager.getClient1();
     client2 = patchingManager.getClient2();
