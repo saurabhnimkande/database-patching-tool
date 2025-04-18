@@ -4,25 +4,23 @@ import setupPrompt from "./bin/cli/setupPrompt.js";
 import setupAdditionalDetailsPrompt from "./bin/cli/setupAdditionalDetailsPrompt.js";
 import actionPrompt from "./bin/cli/actionPrompt.js";
 import deleteConfigPrompt from "./bin/cli/deleteConfigPrompt.js";
-import { deleteAllCreds, deleteAllPaths } from "./utils/configManager.js";
+import { deleteAllCreds, deleteAllPaths, deleteSchemaName } from "./utils/configManager.js";
 import singleTableActions from "./bin/cli/singleTableActions.js";
 
 const program = new Command();
 
-program.name("dbpt").description("CLI tool to manage DB patching").version("1.0.0");
+program.name("dpt").description("CLI tool to manage DB patching").version("1.0.0");
 
 program
   .command("setup")
   .description("Setup the required configuration details")
-  .action(() => {
-    setupPrompt();
-  });
-
-program
-  .command("setup-additional-details")
-  .description("Setup the patching output path, schema name, etc.")
+  .option("-a, --additional", "Setup additional details")
   .action((options) => {
-    setupAdditionalDetailsPrompt(false);
+    if (options.additional) {
+      setupAdditionalDetailsPrompt(false);
+    } else {
+      setupPrompt();
+    }
   });
 
 program
@@ -32,7 +30,7 @@ program
     actionPrompt();
   });
 
-program
+  program
   .command("clear-credentials")
   .description("Clear stored credentials")
   .option("-a, --all", "Clear all credentials")
@@ -57,6 +55,7 @@ program
       deleteConfigPrompt("PATH");
     }
   });
+
 
 // New commands for single table operations
 program
@@ -102,6 +101,53 @@ program
       console.error("Please specify an operation: --alter, --ddl, or --seed");
       // eslint-disable-next-line no-undef
       process.exit(1);
+    }
+  });
+
+  program
+  .command("clear-all")
+  .description("Clear all configuration details")
+  .option("-c, --credentials", "Clear credentials")
+  .option("-p, --paths", "Clear paths")
+  .option("-s, --schema", "Clear schema")
+  .action(async (options) => {
+    if (options.credentials) {
+      await deleteAllCreds();
+      console.log("Successfully cleared all saved credentials ✅");
+    } else if (options.paths) {
+      await deleteAllPaths();
+      console.log("Successfully cleared all saved paths ✅");
+    } else if (options.schema) {
+      await deleteSchemaName();
+      console.log("Successfully cleared all saved schema ✅");
+    } else {
+      await deleteAllCreds();
+      await deleteAllPaths();
+      await deleteSchemaName();
+      console.log("Successfully cleared all saved configuration details ✅");
+      // eslint-disable-next-line no-undef
+      process.exit(0);
+    }
+  });
+
+  program
+  .command("clear")
+  .description("Clear single configuration detail")
+  .option("-c, --credentials", "Clear credentials")
+  .option("-p, --paths", "Clear paths")
+  .option("-s, --schema", "Clear schema")
+  .action(async (options) => {
+    if (options.credentials) {
+      await deleteConfigPrompt("CREDS");
+    } else if (options.paths) {
+      await deleteConfigPrompt("PATH");
+    } else if (options.schema) {
+      await deleteSchemaName();
+      console.log("Successfully cleared all saved schema ✅");
+    } else {
+      console.error("Please specify an operation: --credentials, --paths, or --schema");
+      // eslint-disable-next-line no-undef
+      process.exit(1);  
     }
   });
 
