@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import setupPrompt from "./bin/cli/setupPrompt.js";
-import setupPathPrompt from "./bin/cli/setupPathPrompt.js";
+import setupAdditionalDetailsPrompt from "./bin/cli/setupAdditionalDetailsPrompt.js";
 import actionPrompt from "./bin/cli/actionPrompt.js";
 import deleteConfigPrompt from "./bin/cli/deleteConfigPrompt.js";
 import { deleteAllCreds, deleteAllPaths } from "./utils/configManager.js";
@@ -12,18 +12,17 @@ const program = new Command();
 program.name("dbpt").description("CLI tool to manage DB patching").version("1.0.0");
 
 program
-  .command("setup-credentials")
-  .description("Setup azure key vault")
+  .command("setup")
+  .description("Setup the required configuration details")
   .action(() => {
     setupPrompt();
   });
 
 program
-  .command("setup-path")
-  .description("Setup the patching output path")
-  .option("-d, --default", "Use default paths")
+  .command("setup-additional-details")
+  .description("Setup the patching output path, schema name, etc.")
   .action((options) => {
-    setupPathPrompt(false, options.default || false);
+    setupAdditionalDetailsPrompt(false);
   });
 
 program

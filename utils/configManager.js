@@ -47,12 +47,12 @@ async function writeConfig(data) {
 
 /**
  * Saves database credentials for a specific environment
- * @param {string} env - The environment name (e.g., 'dev', 'prod')
+ * @param {string} env_name - The environment name (e.g., 'dev_env', 'prod_env')
  * @param {Object} value - The credentials object
  */
-export async function saveCreds(env, value) {
+export async function saveCreds(env_name, value) {
   const config = await readConfig();
-  config.db_creds[env] = value;
+  config.db_creds[env_name] = value;
   await writeConfig(config);
 }
 
@@ -79,12 +79,12 @@ export async function saveSchemaName(schema) {
 
 /**
  * Retrieves database credentials for a specific environment
- * @param {string} env - The environment name
+ * @param {string} env_name - The environment name
  * @returns {Promise<Object|null>} The credentials object or null if not found
  */
-export async function getCreds(env) {
+export async function getCreds(env_name) {
   const config = await readConfig();
-  return config.db_creds[env] || null;
+  return config.db_creds[env_name] || null;
 }
 
 /**
@@ -108,22 +108,22 @@ export async function getSchemaName() {
 
 /**
  * Checks if credentials exist for a specific environment
- * @param {string} env - The environment name
+ * @param {string} env_name - The environment name
  * @returns {Promise<boolean>} True if credentials exist
  */
-export async function credsExist(env) {
+export async function credsExist(env_name) {
   const config = await readConfig();
-  return !!config.db_creds[env];
+  return !!config.db_creds[env_name];
 }
 
 /**
  * Deletes credentials for a specific environment
- * @param {string} env - The environment name
+ * @param {string} env_name - The environment name
  */
-export async function deleteCreds(env) {
+export async function deleteCreds(env_name) {
   const config = await readConfig();
-  if (config.db_creds[env]) {
-    delete config.db_creds[env];
+  if (config.db_creds[env_name]) {
+    delete config.db_creds[env_name];
     await writeConfig(config);
   }
 }
