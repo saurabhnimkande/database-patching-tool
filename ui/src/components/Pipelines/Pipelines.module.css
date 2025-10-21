@@ -1,0 +1,16 @@
+.pipelinesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.cardsContainer {
+  display: flex;
+  gap: 1rem;
+}
+.pipelinesSubContainer {
+  background-color: white;
+  border-radius: 6px;
+}
