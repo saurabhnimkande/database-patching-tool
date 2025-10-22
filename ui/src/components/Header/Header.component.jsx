@@ -1,4 +1,4 @@
 import styles from "./Header.module.css";
-export const HeaderComponent = () => {
-  return <div className={styles.headerContainer}>Pipelines</div>;
+export const HeaderComponent = ({selectedComponentName}) => {
+  return <div className={styles.headerContainer}>{selectedComponentName}</div>;
 };

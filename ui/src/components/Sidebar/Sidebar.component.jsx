@@ -5,11 +5,11 @@ import {
   SettingOutlined, // Settings
   MenuFoldOutlined,
   SearchOutlined,
-  ReadOutlined
+  ReadOutlined,
 } from "@ant-design/icons";
 import styles from "./Sidebar.module.css";
 
-export const Sidebar = () => {
+export const Sidebar = ({ handleSelectedComponent }) => {
   const items = [
     {
       key: "grp",
@@ -24,8 +24,7 @@ export const Sidebar = () => {
   ];
 
   const sidebarOnClick = (e) => {
-    console.log("click", e.key);
-    // route or state updates go here based on e.key
+    handleSelectedComponent(e.key);
   };
 
   return (
@@ -38,10 +37,18 @@ export const Sidebar = () => {
           <MenuFoldOutlined />
         </div>
       </div>
-      <Input placeholder="Search" prefix={<SearchOutlined />} className={styles.searchBox} allowClear onPressEnter={(e) => console.log(e.target.value)} />
+      <Input
+        placeholder="Search"
+        prefix={<SearchOutlined />}
+        className={styles.searchBox}
+        allowClear
+        onPressEnter={(e) => console.log(e.target.value)}
+      />
       <Menu onClick={sidebarOnClick} defaultSelectedKeys={["pipelines"]} mode="inline" items={items} style={{ borderInlineEnd: 0 }} />
       <div className={styles.moreDetails}>
-        <div className={styles.moreDetailsIcon}><ReadOutlined /></div>
+        <div className={styles.moreDetailsIcon}>
+          <ReadOutlined />
+        </div>
         <div>Getting Started with the Database Patching Tool</div>
         <div className={styles.learnMore}>Learn more</div>
       </div>

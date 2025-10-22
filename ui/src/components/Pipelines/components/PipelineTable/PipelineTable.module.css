@@ -1,5 +1,17 @@
 .playButton {
-    color: rgb(99, 215, 99);
-    font-size: 1.5rem;
-    cursor:pointer;
+  color: #8e25ebff;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+.deleteButton {
+  color: rgb(255, 77, 79);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+.nameContainer {
+  cursor: pointer;
+}
+
+.nameContainer:hover {
+  color: #8e25ebff;
 }

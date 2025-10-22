@@ -2,7 +2,7 @@ import { InfoCard } from "./components/InfoCard/InfoCard.component";
 import { PipelineTable } from "./components/PipelineTable/PipelineTable.component";
 import styles from "./Pipelines.module.css";
 
-export const Pipelines = () => {
+export const Pipelines = ({handleSelectedComponent}) => {
   const statusCardsData = [
     {
       type: "add",
@@ -31,11 +31,19 @@ export const Pipelines = () => {
     <div className={styles.pipelinesContainer}>
       <div className={styles.cardsContainer}>
         {statusCardsData.map((el, i) => (
-          <InfoCard key={i} count={el.count} title={el.title} iconLink={el.iconLink} type={el.type} iconLinkHover={el.iconLinkHover} />
+          <InfoCard
+            key={i}
+            count={el.count}
+            title={el.title}
+            iconLink={el.iconLink}
+            type={el.type}
+            iconLinkHover={el.iconLinkHover}
+            handleSelectedComponent={handleSelectedComponent}
+          />
         ))}
       </div>
       <div className={styles.pipelinesSubContainer}>
-        <PipelineTable />
+        <PipelineTable handleSelectedComponent={handleSelectedComponent} />
       </div>
     </div>
   );

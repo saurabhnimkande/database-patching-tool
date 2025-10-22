@@ -1,17 +1,39 @@
+import { useEffect, useState } from "react";
 import "./App.css";
 import { HeaderComponent } from "./components/header/header.component";
 import { Pipelines } from "./components/Pipelines/Pipelines.component";
 import { Sidebar } from "./components/sidebar/sidebar.component";
 import { Layout, ConfigProvider } from "antd";
+import { CreatePipeline } from "./components/Pipelines/components/CreatePipeline/CreatePipeline.component";
 const { Header, Sider, Content } = Layout;
 
 function App() {
+  const [selectedComponent, setSelectedComponent] = useState(null);
+  const [selectedComponentName, setSelectedComponentName] = useState(null);
+
+  const handleSelectedComponent = (componentName) => {
+    if (componentName === "pipelines") {
+      setSelectedComponent(<Pipelines handleSelectedComponent={handleSelectedComponent} />);
+      setSelectedComponentName("Pipelines");
+    } else if (componentName === "create-new-pipeline") {
+      setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} />);
+      setSelectedComponentName("Create New Pipeline");
+    } else {
+      setSelectedComponent(<div>Work in progress</div>);
+      setSelectedComponentName("Work in progress");
+    }
+  };
+
+  useEffect(() => {
+    handleSelectedComponent("pipelines");
+  }, []);
+
   return (
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: "#000000ff",
-          colorBgBase: "#f2f5f7",
+          colorPrimary: "#8e25ebff",
+          colorBgBase: "#ffffffff",
           colorTextBase: "#000000ff",
         },
         components: {
@@ -22,7 +44,7 @@ function App() {
             footerBg: "#111827",
             siderBg: "#ffffff",
             headerColor: "#e5e7eb",
-            headerHeight: 84,
+            headerHeight: 88,
             headerPadding: 0,
           },
           Menu: {
@@ -58,7 +80,7 @@ function App() {
             headerColor: "#1f2937",
             rowHoverBg: "rgba(250, 250, 250, 1)",
             rowSelectedBg: "#ffffffff",
-            colorBgContainer: '#ffffff',
+            colorBgContainer: "#ffffff",
             // You can continue tuning other Table tokens as needed
           },
         },
@@ -66,15 +88,13 @@ function App() {
     >
       <Layout style={{ minHeight: "100vh" }}>
         <Sider width={260} style={{ padding: "0.75rem" }}>
-          <Sidebar />
+          <Sidebar handleSelectedComponent={handleSelectedComponent} />
         </Sider>
         <Layout>
           <Header style={{ lineHeight: "inherit" }}>
-            <HeaderComponent />
+            <HeaderComponent selectedComponentName={selectedComponentName} />
           </Header>
-          <Content>
-            <Pipelines />
-          </Content>
+          <Content>{selectedComponent}</Content>
         </Layout>
       </Layout>
     </ConfigProvider>

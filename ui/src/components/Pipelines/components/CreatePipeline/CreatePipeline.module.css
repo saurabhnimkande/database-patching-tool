@@ -1,0 +1,11 @@
+.createPipelineContainer {
+    background-color: white;
+    border-radius: 6px;
+    height:  calc(100vh - 106px);
+    padding: 1.5rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.backButton {
+    margin-bottom: 1.5rem;
+}

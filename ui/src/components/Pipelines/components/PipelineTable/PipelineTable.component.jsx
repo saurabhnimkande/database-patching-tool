@@ -1,8 +1,8 @@
-import { Space, Table, Tag } from "antd";
-import { PlayCircleOutlined } from "@ant-design/icons";
+import { Space, Table, Tooltip } from "antd";
+import { CaretRightOutlined, DeleteOutlined } from "@ant-design/icons";
 import styles from "./PipelineTable.module.css";
 
-export const PipelineTable = () => {
+export const PipelineTable = ({ handleSelectedComponent }) => {
   const columns = [
     {
       title: "",
@@ -10,7 +10,9 @@ export const PipelineTable = () => {
       key: "action-toggle",
       render: () => (
         <Space size="middle">
-          <PlayCircleOutlined className={styles.playButton} />
+          <Tooltip title="Start Pipeline">
+            <CaretRightOutlined className={styles.playButton} />
+          </Tooltip>
         </Space>
       ),
     },
@@ -18,6 +20,13 @@ export const PipelineTable = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      render: (name) => (
+        <Space size="middle">
+          <div className={styles.nameContainer} onClick={() => handleSelectedComponent("create-new-pipeline")}>
+            {name}
+          </div>
+        </Space>
+      ),
     },
     {
       title: "Type",
@@ -43,6 +52,18 @@ export const PipelineTable = () => {
       title: "Description",
       dataIndex: "description",
       key: "description",
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
+      render: () => (
+        <Space size="middle">
+          <Tooltip title="Delete Pipeline">
+            <DeleteOutlined className={styles.deleteButton} />
+          </Tooltip>
+        </Space>
+      ),
     },
   ];
   const data = [
