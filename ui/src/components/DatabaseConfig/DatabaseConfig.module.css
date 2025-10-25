@@ -1,0 +1,22 @@
+.databaseConfigContainer {
+    height: calc(100vh -  6.5rem);
+    background-color: white;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    border-radius: 6px;
+    display: flex;
+}
+.databaseVectorImage {
+    height: 100%;
+    border-radius: 6px 0px 0px 6px;
+    opacity: 1;
+    transform: scaleX(-1);
+    filter: hue-rotate(22deg) saturate(1.5) brightness(1.1);
+}
+.componentContainer {
+    padding: 1rem;
+    flex-basis: 100%;
+}
+.actionButton {
+    margin-bottom: 1rem;
+}

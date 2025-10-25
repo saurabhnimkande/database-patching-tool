@@ -3,13 +3,32 @@ import "./App.css";
 import { HeaderComponent } from "./components/header/header.component";
 import { Pipelines } from "./components/Pipelines/Pipelines.component";
 import { Sidebar } from "./components/sidebar/sidebar.component";
-import { Layout, ConfigProvider } from "antd";
+import { Layout, ConfigProvider, Spin, Typography, notification } from "antd";
 import { CreatePipeline } from "./components/Pipelines/components/CreatePipeline/CreatePipeline.component";
+import { DatabaseConfig } from "./components/DatabaseConfig/DatabaseConfig.component";
+import { LoadingOutlined } from "@ant-design/icons";
 const { Header, Sider, Content } = Layout;
 
 function App() {
+  const [notificationApi, contextHolder] = notification.useNotification();
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [selectedComponentName, setSelectedComponentName] = useState(null);
+  const [fullScreenLoading, setFullScreenLoading] = useState(false);
+  const [fullScreenLoadingMessage, setFullScreenLoadingMessage] = useState("");
+
+  const openNotification = (message = "", description = "", type = 'open') => {
+    notificationApi[type]({
+      message,
+      description,
+      showProgress: true,
+      pauseOnHover: true,
+    });
+  };
+
+  const handleFullScreenLoading = (flag, message = "") => {
+    setFullScreenLoading(flag);
+    setFullScreenLoadingMessage(message);
+  };
 
   const handleSelectedComponent = (componentName) => {
     if (componentName === "pipelines") {
@@ -18,6 +37,9 @@ function App() {
     } else if (componentName === "create-new-pipeline") {
       setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} />);
       setSelectedComponentName("Create New Pipeline");
+    } else if (componentName === "db-config") {
+      setSelectedComponent(<DatabaseConfig handleSelectedComponent={handleSelectedComponent} handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} />);
+      setSelectedComponentName("Database Configuration");
     } else {
       setSelectedComponent(<div>Work in progress</div>);
       setSelectedComponentName("Work in progress");
@@ -86,6 +108,14 @@ function App() {
         },
       }}
     >
+      {contextHolder}
+      <Spin
+        spinning={fullScreenLoading}
+        fullscreen
+        indicator={<LoadingOutlined spin />}
+        tip={<Typography.Text style={{ fontSize: "1rem", color: "#ffffffff", fontWeight: 400 }}>{fullScreenLoadingMessage}</Typography.Text>}
+        size="large"
+      />
       <Layout style={{ minHeight: "100vh" }}>
         <Sider width={260} style={{ padding: "0.75rem" }}>
           <Sidebar handleSelectedComponent={handleSelectedComponent} />

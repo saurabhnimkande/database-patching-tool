@@ -17,9 +17,7 @@ async function ensureConfigFile() {
   } catch {
     // Create default config structure if file doesn't exist
     const defaultConfig = {
-      db_creds: {},
-      paths: {},
-      schemaname: ''
+      db_creds: [],
     };
     await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
   }
@@ -50,9 +48,9 @@ async function writeConfig(data) {
  * @param {string} env_name - The environment name (e.g., 'dev_env', 'prod_env')
  * @param {Object} value - The credentials object
  */
-export async function saveCreds(env_name, value) {
+export async function saveCreds(creds) {
   const config = await readConfig();
-  config.db_creds[env_name] = value;
+  config.db_creds.push(creds);
   await writeConfig(config);
 }
 
@@ -82,9 +80,10 @@ export async function saveSchemaName(schema) {
  * @param {string} env_name - The environment name
  * @returns {Promise<Object|null>} The credentials object or null if not found
  */
-export async function getCreds(env_name) {
+export async function getCreds(name) {
   const config = await readConfig();
-  return config.db_creds[env_name] || null;
+
+  return config.db_creds.filter((el) => el.name === name)[0] || {};
 }
 
 /**
@@ -111,9 +110,9 @@ export async function getSchemaName() {
  * @param {string} env_name - The environment name
  * @returns {Promise<boolean>} True if credentials exist
  */
-export async function credsExist(env_name) {
+export async function credsExist(name) {
   const config = await readConfig();
-  return !!config.db_creds[env_name];
+  return !!config.db_creds.filter((el) => el.name === name)[0];
 }
 
 /**
@@ -145,7 +144,7 @@ export async function deletePath(pathName) {
  */
 export async function deleteAllCreds() {
   const config = await readConfig();
-  config.db_creds = {};
+  config.db_creds = [];
   await writeConfig(config);
 }
 
@@ -163,7 +162,7 @@ export async function deleteAllPaths() {
  */
 export async function deleteSchemaName() {
   const config = await readConfig();
-  config.schemaname = '';
+  config.schemaname = "";
   await writeConfig(config);
 }
 

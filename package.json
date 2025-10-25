@@ -16,6 +16,8 @@
   "dependencies": {
     "chalk": "^5.4.1",
     "commander": "^13.1.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "figlet": "^1.8.0",
     "gradient-string": "^3.0.0",
     "inquirer": "^12.5.2",
