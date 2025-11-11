@@ -1,5 +1,5 @@
 import { Button, message, Steps, theme, Spin } from "antd";
-import { LoadingOutlined, SmileOutlined, SolutionOutlined, UserOutlined } from "@ant-design/icons";
+import { SmileOutlined, SolutionOutlined, UserOutlined } from "@ant-design/icons";
 import styles from "./CreatePipeline.module.css";
 import { useState, useEffect } from "react";
 import { BasicSetup } from "./components/BasicSetup/BasicSetup.component";
@@ -8,13 +8,16 @@ import { PipelineConfiguration } from "./components/PipelineConfiguration/Pipeli
 import TableSelector from "./components/TableSelector/TableSelector.component";
 import { axiosInstance } from "../../../../utils/axios";
 
-export const CreatePipeline = ({ handleSelectedComponent }) => {
+export const CreatePipeline = ({ handleSelectedComponent, pipelineData }) => {
   const [allTables, setAllTables] = useState([]);
   const [tablesLoading, setTablesLoading] = useState(false);
   const [picked, setPicked] = useState([]);
   const [basicSetupData, setBasicSetupData] = useState({ name: '', type: '', subType: '', description: '' });
   const [databaseSelectionData, setDatabaseSelectionData] = useState({ masterDatabase: '', masterSchema: '', compareDatabase: '', compareSchema: '' });
   const [pipelineConfigurationData, setPipelineConfigurationData] = useState({ exportFileName: '', exportMode: '' });
+  const [saving, setSaving] = useState(false);
+
+
   const steps = [
     {
       title: "Basic",
@@ -53,6 +56,35 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
     textAlign: "left",
   };
 
+  // Initialize form data when editing an existing pipeline
+  useEffect(() => {
+    if (pipelineData) {
+      setBasicSetupData({
+        name: pipelineData.name || '',
+        type: pipelineData.type || '',
+        subType: pipelineData.subType || '',
+        description: pipelineData.description || '',
+      });
+      setDatabaseSelectionData({
+        masterDatabase: pipelineData.masterDatabase || '',
+        masterSchema: pipelineData.masterSchema || '',
+        compareDatabase: pipelineData.compareDatabase || '',
+        compareSchema: pipelineData.compareSchema || '',
+      });
+      setPipelineConfigurationData({
+        exportFileName: pipelineData.exportFileName || '',
+        exportMode: pipelineData.exportMode || '',
+      });
+      // Don't set picked here - it will be set after tables are loaded
+    } else {
+      // Reset to empty state when creating new pipeline
+      setBasicSetupData({ name: '', type: '', subType: '', description: '' });
+      setDatabaseSelectionData({ masterDatabase: '', masterSchema: '', compareDatabase: '', compareSchema: '' });
+      setPipelineConfigurationData({ exportFileName: '', exportMode: '' });
+      setPicked([]);
+    }
+  }, [pipelineData]);
+
   // Fetch tables when master database and schema are selected
   useEffect(() => {
     const fetchTables = async () => {
@@ -62,8 +94,13 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
           const response = await axiosInstance.get(`/db-config/database-tables/${databaseSelectionData.masterDatabase}/${databaseSelectionData.masterSchema}`);
           if (response.data.status === 'Success') {
             setAllTables(response.data.result);
-            // Reset picked tables if they don't exist in the new table list
-            setPicked(prev => prev.filter(table => response.data.result.includes(table)));
+            // For editing: set picked tables to the saved selection, filtered to available tables
+            // For creating: keep current picked tables, filtered to available tables
+            if (pipelineData) {
+              setPicked((pipelineData.selectedTables || []).filter(table => response.data.result.includes(table)));
+            } else {
+              setPicked(prev => prev.filter(table => response.data.result.includes(table)));
+            }
           } else {
             message.error('Failed to fetch tables');
             setAllTables([]);
@@ -84,7 +121,60 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
     };
 
     fetchTables();
-  }, [databaseSelectionData.masterDatabase, databaseSelectionData.masterSchema]);
+  }, [databaseSelectionData.masterDatabase, databaseSelectionData.masterSchema, pipelineData]);
+
+  const handleSave = async () => {
+    // Validate required fields
+    if (!basicSetupData.name || !basicSetupData.type) {
+      message.error('Please fill in all required fields in Basic Setup');
+      setCurrent(0);
+      return;
+    }
+
+    if (!databaseSelectionData.masterDatabase || !databaseSelectionData.masterSchema) {
+      message.error('Please select master database and schema');
+      setCurrent(1);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const pipelinePayload = {
+        name: basicSetupData.name,
+        type: basicSetupData.type,
+        subType: basicSetupData.subType,
+        description: basicSetupData.description,
+        masterDatabase: databaseSelectionData.masterDatabase,
+        masterSchema: databaseSelectionData.masterSchema,
+        compareDatabase: databaseSelectionData.compareDatabase,
+        compareSchema: databaseSelectionData.compareSchema,
+        selectedTables: picked,
+        exportFileName: pipelineConfigurationData.exportFileName,
+        exportMode: pipelineConfigurationData.exportMode,
+      };
+
+      let response;
+      if (pipelineData) {
+        // Update existing pipeline
+        response = await axiosInstance.put(`/pipelines/${pipelineData.id}`, pipelinePayload);
+      } else {
+        // Create new pipeline
+        response = await axiosInstance.post('/pipelines/create', pipelinePayload);
+      }
+
+      if (response.data.status === 'Success') {
+        message.success(pipelineData ? 'Pipeline updated successfully!' : 'Pipeline created successfully!');
+        handleSelectedComponent('pipelines');
+      } else {
+        message.error(response.data.message || `Failed to ${pipelineData ? 'update' : 'create'} pipeline`);
+      }
+    } catch (error) {
+      console.error('Error saving pipeline:', error);
+      message.error(`Failed to ${pipelineData ? 'update' : 'create'} pipeline. Please try again.`);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className={styles.createPipelineContainer}>
@@ -122,8 +212,8 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
             </Button>
           )}
           {current === steps.length - 1 && (
-            <Button type="primary" onClick={() => message.success("Processing complete!")}>
-              Save
+            <Button type="primary" onClick={handleSave} loading={saving} disabled={saving}>
+              {saving ? 'Saving...' : (pipelineData ? 'Update' : 'Save')}
             </Button>
           )}
           {current > 0 && (

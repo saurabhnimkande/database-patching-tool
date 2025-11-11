@@ -16,6 +16,7 @@ function App() {
   const [fullScreenLoading, setFullScreenLoading] = useState(false);
   const [fullScreenLoadingMessage, setFullScreenLoadingMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [editingPipeline, setEditingPipeline] = useState(null);
 
   const openNotification = (message = "", description = "", type = 'open') => {
     notificationApi[type]({
@@ -31,13 +32,14 @@ function App() {
     setFullScreenLoadingMessage(message);
   };
 
-  const handleSelectedComponent = (componentName) => {
+  const handleSelectedComponent = (componentName, pipelineData = null) => {
     if (componentName === "pipelines") {
       setSelectedComponent(<Pipelines handleSelectedComponent={handleSelectedComponent} />);
       setSelectedComponentName("Pipelines");
     } else if (componentName === "create-new-pipeline") {
-      setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} />);
-      setSelectedComponentName("Create New Pipeline");
+      setEditingPipeline(pipelineData);
+      setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} pipelineData={pipelineData} />);
+      setSelectedComponentName(pipelineData ? "Edit Pipeline" : "Create New Pipeline");
     } else if (componentName === "db-config") {
       setSelectedComponent(<DatabaseConfig handleSelectedComponent={handleSelectedComponent} handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} />);
       setSelectedComponentName("Database Configuration");

@@ -3,6 +3,9 @@ import { PipelineTable } from "./components/PipelineTable/PipelineTable.componen
 import styles from "./Pipelines.module.css";
 
 export const Pipelines = ({handleSelectedComponent}) => {
+  const handleEditPipeline = (pipeline) => {
+    handleSelectedComponent("create-new-pipeline", pipeline);
+  };
   const statusCardsData = [
     {
       type: "add",
@@ -43,7 +46,7 @@ export const Pipelines = ({handleSelectedComponent}) => {
         ))}
       </div>
       <div className={styles.pipelinesSubContainer}>
-        <PipelineTable handleSelectedComponent={handleSelectedComponent} />
+        <PipelineTable handleSelectedComponent={handleSelectedComponent} onEditPipeline={handleEditPipeline} />
       </div>
     </div>
   );

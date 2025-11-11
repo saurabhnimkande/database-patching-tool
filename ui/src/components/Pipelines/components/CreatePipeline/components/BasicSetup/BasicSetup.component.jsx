@@ -8,6 +8,10 @@ export const BasicSetup = ({ initialValues, onValuesChange }) => {
     form.setFieldsValue(initialValues);
   }, [form, initialValues]);
 
+  const handleValuesChange = (changedValues, allValues) => {
+    onValuesChange(prev => ({ ...prev, ...allValues }));
+  };
+
   return (
     <div>
       <Form
@@ -16,7 +20,7 @@ export const BasicSetup = ({ initialValues, onValuesChange }) => {
         wrapperCol={{ span: 14 }}
         layout="horizontal"
         style={{ maxWidth: "50vw" }}
-        onValuesChange={onValuesChange}
+        onValuesChange={handleValuesChange}
       >
         <Form.Item label="Name" name="name">
           <Input />

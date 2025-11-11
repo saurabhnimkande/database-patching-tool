@@ -1,8 +1,29 @@
-import { Space, Table, Tooltip } from "antd";
+import { Space, Table, Tooltip, Spin } from "antd";
 import { CaretRightOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
+import { axiosInstance } from "../../../../utils/axios";
 import styles from "./PipelineTable.module.css";
 
-export const PipelineTable = ({ handleSelectedComponent }) => {
+export const PipelineTable = ({ handleSelectedComponent, onEditPipeline }) => {
+  const [pipelines, setPipelines] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPipelines = async () => {
+      try {
+        const response = await axiosInstance.get('/pipelines/list');
+        if (response.data.status === 'Success') {
+          setPipelines(response.data.result);
+        }
+      } catch (error) {
+        console.error('Error fetching pipelines:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPipelines();
+  }, []);
   const columns = [
     {
       title: "",
@@ -20,9 +41,9 @@ export const PipelineTable = ({ handleSelectedComponent }) => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (name) => (
+      render: (name, record) => (
         <Space size="middle">
-          <div className={styles.nameContainer} onClick={() => handleSelectedComponent("create-new-pipeline")}>
+          <div className={styles.nameContainer} onClick={() => onEditPipeline(record)}>
             {name}
           </div>
         </Space>
@@ -66,96 +87,22 @@ export const PipelineTable = ({ handleSelectedComponent }) => {
       ),
     },
   ];
-  const data = [
-    {
-      key: "1",
-      name: "Dev1 Create Tables",
-      type: "Generate",
-      status: "In-Progress",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "To generate table script",
-    },
-    {
-      key: "2",
-      name: "QA to demo3",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "Comparing QA with demo3",
-    },
-    {
-      key: "3",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Extract Seeds",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "4",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "5",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "6",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "7",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "8",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "9",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-  ];
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <Table
       columns={columns}
-      dataSource={data}
+      dataSource={pipelines}
       pagination={{
         defaultPageSize: 6,
       }}
+      rowKey="id"
     />
   );
 };
