@@ -4,8 +4,11 @@ import styles from "./DatabaseConfig.module.css";
 import { useEffect, useState } from "react";
 import { AddNewDatabase } from "./AddNewDatabase/AddNewDatabase.component";
 import { axiosInstance } from "../../utils/axios.js";
+
 export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) => {
   const [addNewDatabaseFlag, setAddNewDatabaseFlag] = useState(false);
+  const [editDatabaseFlag, setEditDatabaseFlag] = useState(false);
+  const [databaseToEdit, setDatabaseToEdit] = useState(null);
   const [databaseList, setDatabaseList] = useState([]);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [databaseToDelete, setDatabaseToDelete] = useState(null);
@@ -16,6 +19,13 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
 
   const goBack = () => {
     setAddNewDatabaseFlag(false);
+    setEditDatabaseFlag(false);
+    setDatabaseToEdit(null);
+  };
+
+  const handleEdit = (record) => {
+    setDatabaseToEdit(record);
+    setEditDatabaseFlag(true);
   };
 
   const fetchAddedDatabaseList = async () => {
@@ -103,7 +113,7 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
             <Button type="text" icon={<DeleteOutlined />} onClick={() => showDeleteModal(record.name)} />
           </Tooltip>
           <Tooltip title="Edit Database Configuration">
-            <EditOutlined className={styles.deleteButton} />
+            <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           </Tooltip>
         </Space>
       ),
@@ -113,13 +123,24 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
   const componentToggle = () => {
     setAddNewDatabaseFlag((el) => !el);
   };
+
+  const handleBackOrAdd = () => {
+    if (isFormVisible) {
+      goBack();
+    } else {
+      componentToggle();
+    }
+  };
+
+  const isFormVisible = addNewDatabaseFlag || editDatabaseFlag;
+
   return (
     <div className={styles.databaseConfigContainer}>
       <div className={styles.componentContainer}>
-        <Button className={styles.actionButton} type="primary" onClick={componentToggle}>
-          {addNewDatabaseFlag ? "Back" : "Add new database"}
+        <Button className={styles.actionButton} type="primary" onClick={handleBackOrAdd}>
+          {isFormVisible ? "Back" : "Add new database"}
         </Button>
-        {!addNewDatabaseFlag ? (
+        {!isFormVisible ? (
           <Table
             columns={columns}
             dataSource={databaseList}
@@ -128,7 +149,14 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
             }}
           />
         ) : (
-          <AddNewDatabase handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} goBack={goBack} />
+          <AddNewDatabase
+            handleFullScreenLoading={handleFullScreenLoading}
+            openNotification={openNotification}
+            goBack={goBack}
+            isEdit={editDatabaseFlag}
+            initialData={databaseToEdit}
+            onSuccess={fetchAddedDatabaseList}
+          />
         )}
       </div>
       <div>
