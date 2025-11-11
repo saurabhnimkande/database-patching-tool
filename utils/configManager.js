@@ -126,15 +126,13 @@ export async function credsExist(name) {
 }
 
 /**
- * Deletes credentials for a specific environment
- * @param {string} env_name - The environment name
+ * Deletes credentials for a specific database name
+ * @param {string} name - The database name
  */
-export async function deleteCreds(env_name) {
+export async function deleteCreds(name) {
   const config = await readConfig();
-  if (config.db_creds[env_name]) {
-    delete config.db_creds[env_name];
-    await writeConfig(config);
-  }
+  config.db_creds = config.db_creds.filter((el) => el.name !== name);
+  await writeConfig(config);
 }
 
 /**

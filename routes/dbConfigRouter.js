@@ -1,5 +1,5 @@
 import express from "express";
-import { credsExist, getAllCreds, getCreds, saveCreds } from "../utils/configManager.js";
+import { credsExist, getAllCreds, getCreds, saveCreds, deleteCreds } from "../utils/configManager.js";
 import { validateDatabaseCredentials } from "../utils/dbValidator.js";
 const router = express.Router();
 
@@ -88,6 +88,35 @@ router.get("/database-list", async (req, res) => {
       status: "Success",
       message: "List of all database creds",
       result: creds,
+    });
+  } catch (error) {
+    console.log("error:", error);
+    return res.status(500).send({
+      status: "Error",
+      message: error.message,
+      result: {},
+    });
+  }
+});
+
+router.delete("/delete-database/:name", async (req, res) => {
+  try {
+    const { name } = req.params;
+    console.log("Deleting database:", name);
+
+    if (!(await credsExist(name))) {
+      return res.status(404).send({
+        status: "Error",
+        message: `Database credentials with ${name} name not found`,
+        result: {},
+      });
+    }
+
+    await deleteCreds(name);
+    return res.status(200).send({
+      status: "Success",
+      message: "Successfully deleted database",
+      result: {},
     });
   } catch (error) {
     console.log("error:", error);

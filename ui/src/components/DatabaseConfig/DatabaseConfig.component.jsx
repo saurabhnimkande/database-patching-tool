@@ -1,4 +1,4 @@
-import { Space, Table, Tooltip, Button } from "antd";
+import { Space, Table, Tooltip, Button, Modal } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import styles from "./DatabaseConfig.module.css";
 import { useEffect, useState } from "react";
@@ -7,6 +7,8 @@ import { axiosInstance } from "../../utils/axios.js";
 export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) => {
   const [addNewDatabaseFlag, setAddNewDatabaseFlag] = useState(false);
   const [databaseList, setDatabaseList] = useState([]);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [databaseToDelete, setDatabaseToDelete] = useState(null);
 
   useEffect(() => {
     fetchAddedDatabaseList()
@@ -31,6 +33,38 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
       handleFullScreenLoading(false, "");
       openNotification("Error", error.message);
     }
+  };
+
+  const deleteDatabase = async (name) => {
+    try {
+      handleFullScreenLoading(true, "Deleting database...");
+      await axiosInstance.delete(`/db-config/delete-database/${name}`);
+      openNotification("Success", "Database deleted successfully");
+      fetchAddedDatabaseList(); // Refresh the list
+    } catch (error) {
+      console.log("error:", error);
+      openNotification("Error", error.response?.data?.message || error.message);
+    } finally {
+      handleFullScreenLoading(false, "");
+    }
+  };
+
+  const showDeleteModal = (name) => {
+    setDatabaseToDelete(name);
+    setDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (databaseToDelete) {
+      deleteDatabase(databaseToDelete);
+    }
+    setDeleteModalVisible(false);
+    setDatabaseToDelete(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
+    setDatabaseToDelete(null);
   };
 
   const columns = [
@@ -63,99 +97,16 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
       title: "Action",
       dataIndex: "action",
       key: "action",
-      render: () => (
+      render: (text, record) => (
         <Space size="middle">
           <Tooltip title="Delete Database Configuration">
-            <DeleteOutlined className={styles.deleteButton} />
+            <Button type="text" icon={<DeleteOutlined />} onClick={() => showDeleteModal(record.name)} />
           </Tooltip>
           <Tooltip title="Edit Database Configuration">
             <EditOutlined className={styles.deleteButton} />
           </Tooltip>
         </Space>
       ),
-    },
-  ];
-  const data = [
-    {
-      key: "1",
-      name: "Dev1 Create Tables",
-      type: "Generate",
-      status: "In-Progress",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "To generate table script",
-    },
-    {
-      key: "2",
-      name: "QA to demo3",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "Comparing QA with demo3",
-    },
-    {
-      key: "3",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Extract Seeds",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "4",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "5",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "6",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "7",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "8",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
-    },
-    {
-      key: "9",
-      name: "QA to demo6",
-      status: "Ready to start",
-      type: "Compare",
-      "last-duration": "10 mins",
-      "last-success": "3 days ago",
-      description: "abc",
     },
   ];
 
@@ -183,6 +134,17 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
       <div>
         <img src="./database_img.jpg" alt="database-vector" className={styles.databaseVectorImage} />
       </div>
+      <Modal
+        title="Confirm Delete"
+        open={deleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        okText="Yes"
+        okType="danger"
+        cancelText="No"
+      >
+        <p>Are you sure you want to delete the database configuration "{databaseToDelete}"?</p>
+      </Modal>
     </div>
   );
 };
