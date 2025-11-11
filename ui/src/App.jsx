@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { HeaderComponent } from "./components/header/header.component";
 import { Pipelines } from "./components/Pipelines/Pipelines.component";
-import { Sidebar } from "./components/sidebar/sidebar.component";
+import { Sidebar } from "./components/Sidebar/Sidebar.component";
 import { Layout, ConfigProvider, Spin, Typography, notification } from "antd";
 import { CreatePipeline } from "./components/Pipelines/components/CreatePipeline/CreatePipeline.component";
 import { DatabaseConfig } from "./components/DatabaseConfig/DatabaseConfig.component";
@@ -15,6 +15,7 @@ function App() {
   const [selectedComponentName, setSelectedComponentName] = useState(null);
   const [fullScreenLoading, setFullScreenLoading] = useState(false);
   const [fullScreenLoadingMessage, setFullScreenLoadingMessage] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const openNotification = (message = "", description = "", type = 'open') => {
     notificationApi[type]({
@@ -117,8 +118,8 @@ function App() {
         size="large"
       />
       <Layout style={{ minHeight: "100vh" }}>
-        <Sider width={260} style={{ padding: "0.75rem" }}>
-          <Sidebar handleSelectedComponent={handleSelectedComponent} />
+        <Sider width={sidebarCollapsed ? 80 : 260} style={{ padding: sidebarCollapsed ? "0.75rem 0.25rem" : "0.75rem", transition: "all 0.3s ease" }}>
+          <Sidebar handleSelectedComponent={handleSelectedComponent} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
         </Sider>
         <Layout>
           <Header style={{ lineHeight: "inherit" }}>

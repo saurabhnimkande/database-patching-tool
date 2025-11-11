@@ -10,6 +10,14 @@
   justify-content: space-between;
   margin-bottom: 1rem;
 }
+
+.logoContainer.collapsed {
+  justify-content: center;
+}
+
+.logoContainer.collapsed img {
+  display: none;
+}
 .collapseIconContainer {
     color: rgb(117, 121, 128);
     cursor: pointer;
