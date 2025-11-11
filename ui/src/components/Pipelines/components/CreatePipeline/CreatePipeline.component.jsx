@@ -120,25 +120,24 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
     "Rapid Wolf",
   ];
   const [picked, setPicked] = useState(["users", "orders"]);
+  const [basicSetupData, setBasicSetupData] = useState({ name: '', type: '', subType: '', description: '' });
+  const [databaseSelectionData, setDatabaseSelectionData] = useState({ masterDatabase: '', masterSchema: '', compareDatabase: '', compareSchema: '' });
+  const [pipelineConfigurationData, setPipelineConfigurationData] = useState({ exportFileName: '', exportMode: '' });
   const steps = [
     {
       title: "Basic",
-      content: <BasicSetup />,
       icon: <UserOutlined />,
     },
     {
       title: "Database selection",
-      content: <DatabaseSelection />,
       icon: <SolutionOutlined />,
     },
     {
       title: "Select Dataset",
-      content: <TableSelector tables={allTables} selected={picked} onChange={setPicked} searchable title="Select Dataset" />,
       icon: <SolutionOutlined />,
     },
     {
       title: "Configurations",
-      content: <PipelineConfiguration />,
       icon: <SmileOutlined />,
     },
   ];
@@ -170,7 +169,20 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
       </div>
       <div>
         <Steps current={current} items={items} size="small" />
-        <div style={contentStyle}>{steps[current].content}</div>
+        <div style={contentStyle}>
+          <div style={{ display: current === 0 ? 'block' : 'none' }}>
+            <BasicSetup initialValues={basicSetupData} onValuesChange={setBasicSetupData} />
+          </div>
+          <div style={{ display: current === 1 ? 'block' : 'none' }}>
+            <DatabaseSelection initialValues={databaseSelectionData} onValuesChange={setDatabaseSelectionData} />
+          </div>
+          <div style={{ display: current === 2 ? 'block' : 'none' }}>
+            <TableSelector tables={allTables} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
+          </div>
+          <div style={{ display: current === 3 ? 'block' : 'none' }}>
+            <PipelineConfiguration initialValues={pipelineConfigurationData} onValuesChange={setPipelineConfigurationData} />
+          </div>
+        </div>
         <div style={{ marginTop: 24 }}>
           {current < steps.length - 1 && (
             <Button type="primary" onClick={() => next()}>

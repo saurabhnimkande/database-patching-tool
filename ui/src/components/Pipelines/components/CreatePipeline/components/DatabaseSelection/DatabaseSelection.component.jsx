@@ -4,7 +4,12 @@ const { TextArea } = Input;
 import { axiosInstance } from "../../../../../../utils/axios";
 import styles from "./DatabaseSelection.module.css";
 
-export const DatabaseSelection = () => {
+export const DatabaseSelection = ({ initialValues, onValuesChange }) => {
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    form.setFieldsValue(initialValues);
+  }, [form, initialValues]);
   const [databases, setDatabases] = useState([]);
   const [masterSchemas, setMasterSchemas] = useState([]);
   const [compareSchemas, setCompareSchemas] = useState([]);
@@ -51,11 +56,21 @@ export const DatabaseSelection = () => {
   };
 
   const handleMasterDatabaseChange = (value) => {
+    onValuesChange({ masterDatabase: value });
     fetchSchemas(value, true);
   };
 
   const handleCompareDatabaseChange = (value) => {
+    onValuesChange({ compareDatabase: value });
     fetchSchemas(value, false);
+  };
+
+  const handleMasterSchemaChange = (value) => {
+    onValuesChange({ masterSchema: value });
+  };
+
+  const handleCompareSchemaChange = (value) => {
+    onValuesChange({ compareSchema: value });
   };
 
   const isLoadingAnySchema = loadingMasterSchemas || loadingCompareSchemas;
@@ -78,11 +93,11 @@ export const DatabaseSelection = () => {
           <Spin size="large" tip="Loading schemas..." />
         </div>
       )}
-      <Form layout="horizontal" style={{ width: "100%" }}>
+      <Form form={form} layout="horizontal" style={{ width: "100%" }} onValuesChange={onValuesChange}>
         <Row gutter={12}>
           {/* Row 1 */}
           <Col xs={24} md={12}>
-            <Form.Item label="Select master database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }}>
+            <Form.Item label="Select master database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="masterDatabase">
               <Select
                 style={{ width: "100%" }}
                 loading={loadingDatabases}
@@ -100,12 +115,13 @@ export const DatabaseSelection = () => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }}>
+            <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="masterSchema">
               <Select
                 style={{ width: "60%" }}
                 loading={loadingMasterSchemas}
                 placeholder="Select a schema"
                 disabled={isLoadingAnySchema}
+                onChange={handleMasterSchemaChange}
               >
                 {masterSchemas.map((schema) => (
                   <Select.Option key={schema} value={schema}>
@@ -118,7 +134,7 @@ export const DatabaseSelection = () => {
 
           {/* Row 2 */}
           <Col xs={24} md={12}>
-            <Form.Item label="Select Compare database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }}>
+            <Form.Item label="Select Compare database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="compareDatabase">
               <Select
                 style={{ width: "100%" }}
                 loading={loadingDatabases}
@@ -136,12 +152,13 @@ export const DatabaseSelection = () => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }}>
+            <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="compareSchema">
               <Select
                 style={{ width: "60%" }}
                 loading={loadingCompareSchemas}
                 placeholder="Select a schema"
                 disabled={isLoadingAnySchema}
+                onChange={handleCompareSchemaChange}
               >
                 {compareSchemas.map((schema) => (
                   <Select.Option key={schema} value={schema}>
