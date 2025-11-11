@@ -83,7 +83,17 @@ export async function saveSchemaName(schema) {
 export async function getCreds(name) {
   const config = await readConfig();
 
-  return config.db_creds.filter((el) => el.name === name)[0] || {};
+  return config.db_creds.filter((el) => el.name === name)?.[0] || {};
+}
+
+/**
+ * Retrieves all database credentials
+ * @returns {Promise<Object|null>} The credentials array or [] if empty
+ */
+export async function getAllCreds() {
+  const config = await readConfig();
+
+  return config.db_creds || [];
 }
 
 /**
@@ -112,7 +122,7 @@ export async function getSchemaName() {
  */
 export async function credsExist(name) {
   const config = await readConfig();
-  return !!config.db_creds.filter((el) => el.name === name)[0];
+  return !!config.db_creds.filter((el) => el.name === name)?.[0];
 }
 
 /**

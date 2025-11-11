@@ -1,5 +1,5 @@
 import express from "express";
-import { credsExist, getCreds, saveCreds } from "../utils/configManager.js";
+import { credsExist, getAllCreds, getCreds, saveCreds } from "../utils/configManager.js";
 import { validateDatabaseCredentials } from "../utils/dbValidator.js";
 const router = express.Router();
 
@@ -70,6 +70,25 @@ router.post("/test-connection", async (req, res) => {
         result: {},
       });
     }
+  } catch (error) {
+    console.log("error:", error);
+    return res.status(500).send({
+      status: "Error",
+      message: error.message,
+      result: {},
+    });
+  }
+});
+
+router.get("/database-list", async (req, res) => {
+  try {
+    const creds = await getAllCreds();
+
+    return res.status(200).send({
+      status: "Success",
+      message: "List of all database creds",
+      result: creds,
+    });
   } catch (error) {
     console.log("error:", error);
     return res.status(500).send({

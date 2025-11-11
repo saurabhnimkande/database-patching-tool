@@ -4,7 +4,7 @@ import styles from "./AddNewDatabase.module.css";
 import { useState } from "react";
 import { axiosInstance } from "../../../utils/axios.js";
 
-export const AddNewDatabase = ({ handleFullScreenLoading, openNotification }) => {
+export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBack }) => {
   const [form] = Form.useForm();
   const [formData, setFormData] = useState({
     name: "",
@@ -47,17 +47,23 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification }) =>
 
   const handleExternalSubmit = async () => {
     try {
-      await form.validateFields(); // Trigger form validation
-      console.log("TEST", formData);
+      await form.validateFields();
+      handleFullScreenLoading(true, "Adding database credentials...");
+      const response = await axiosInstance.post("/db-config/add-database", formData);
+      const resBody = response.data ?? {};
+      console.log("resBody:", resBody);
+      handleFullScreenLoading(false, "");
+      openNotification(resBody.status, resBody.message);
+      goBack();
     } catch (error) {
       console.error("Validation failed:", error);
+      openNotification("Error", error.message);
     }
   };
 
   const handleTestConnection = async () => {
     try {
-      await form.validateFields(); // Trigger form validation
-      console.log("TEST", formData);
+      await form.validateFields();
       await testConnection();
     } catch (error) {
       console.error("Validation failed:", error);

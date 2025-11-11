@@ -1,10 +1,37 @@
 import { Space, Table, Tooltip, Button } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import styles from "./DatabaseConfig.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AddNewDatabase } from "./AddNewDatabase/AddNewDatabase.component";
+import { axiosInstance } from "../../utils/axios.js";
 export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) => {
   const [addNewDatabaseFlag, setAddNewDatabaseFlag] = useState(false);
+  const [databaseList, setDatabaseList] = useState([]);
+
+  useEffect(() => {
+    fetchAddedDatabaseList()
+  }, []);
+
+  const goBack = () => {
+    setAddNewDatabaseFlag(false);
+  };
+
+  const fetchAddedDatabaseList = async () => {
+    try {
+      handleFullScreenLoading(true, "Fetching database list...");
+      const response = await axiosInstance.get("/db-config/database-list");
+      const resBody = response.data ?? {};
+      let databaseList = resBody.result ?? [];
+      console.log('databaseList:', databaseList);
+      databaseList = databaseList.map((el, i) => ({...el, key: i, 'last-duration': "N/A", "last-success": "N/A"}));
+      setDatabaseList(databaseList);
+      handleFullScreenLoading(false, "");
+    } catch (error) {
+      console.log("error:", error);
+      handleFullScreenLoading(false, "");
+      openNotification("Error", error.message);
+    }
+  };
 
   const columns = [
     {
@@ -144,13 +171,13 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
         {!addNewDatabaseFlag ? (
           <Table
             columns={columns}
-            dataSource={data}
+            dataSource={databaseList}
             pagination={{
               defaultPageSize: 6,
             }}
           />
         ) : (
-          <AddNewDatabase handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} />
+          <AddNewDatabase handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} goBack={goBack} />
         )}
       </div>
       <div>
