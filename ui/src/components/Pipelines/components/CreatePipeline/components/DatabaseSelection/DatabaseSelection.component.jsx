@@ -56,21 +56,21 @@ export const DatabaseSelection = ({ initialValues, onValuesChange }) => {
   };
 
   const handleMasterDatabaseChange = (value) => {
-    onValuesChange({ masterDatabase: value });
+    onValuesChange(prev => ({ ...prev, masterDatabase: value }));
     fetchSchemas(value, true);
   };
 
   const handleCompareDatabaseChange = (value) => {
-    onValuesChange({ compareDatabase: value });
+    onValuesChange(prev => ({ ...prev, compareDatabase: value }));
     fetchSchemas(value, false);
   };
 
   const handleMasterSchemaChange = (value) => {
-    onValuesChange({ masterSchema: value });
+    onValuesChange(prev => ({ ...prev, masterSchema: value }));
   };
 
   const handleCompareSchemaChange = (value) => {
-    onValuesChange({ compareSchema: value });
+    onValuesChange(prev => ({ ...prev, compareSchema: value }));
   };
 
   const isLoadingAnySchema = loadingMasterSchemas || loadingCompareSchemas;
@@ -90,10 +90,10 @@ export const DatabaseSelection = ({ initialValues, onValuesChange }) => {
           alignItems: 'center',
           zIndex: 1000
         }}>
-          <Spin size="large" tip="Loading schemas..." />
+          <Spin size="large" />
         </div>
       )}
-      <Form form={form} layout="horizontal" style={{ width: "100%" }} onValuesChange={onValuesChange}>
+      <Form form={form} layout="horizontal" style={{ width: "100%" }}>
         <Row gutter={12}>
           {/* Row 1 */}
           <Col xs={24} md={12}>

@@ -1,125 +1,17 @@
-import { Button, message, Steps, theme } from "antd";
+import { Button, message, Steps, theme, Spin } from "antd";
 import { LoadingOutlined, SmileOutlined, SolutionOutlined, UserOutlined } from "@ant-design/icons";
 import styles from "./CreatePipeline.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BasicSetup } from "./components/BasicSetup/BasicSetup.component";
 import { DatabaseSelection } from "./components/DatabaseSelection/DatabaseSelection.component";
 import { PipelineConfiguration } from "./components/PipelineConfiguration/PipelineConfiguration.component";
 import TableSelector from "./components/TableSelector/TableSelector.component";
+import { axiosInstance } from "../../../../utils/axios";
 
 export const CreatePipeline = ({ handleSelectedComponent }) => {
-  const allTables = [
-    "users",
-    "orders",
-    "order_items",
-    "products",
-    "categories",
-    "invoices",
-    "payments",
-    "shipment_events",
-    "audit_log",
-    "sessions",
-    "roles",
-    "permissions",
-    "Flame Gale",
-    "Rapid Flare",
-    "Lunar Fox",
-    "Blue Tiger",
-    "Emerald Seeker",
-    "Savage Dragon",
-    "Mystic Whisper",
-    "Golden Knight",
-    "Velvet Flare",
-    "Rapid Shadow",
-    "Iron Vortex",
-    "Echo Hawk",
-    "Ivory Dancer",
-    "Whisper Storm",
-    "Dawn Hunter",
-    "Obsidian Wanderer",
-    "Cobalt Whisper",
-    "Whisper Shade",
-    "Crystal Scribe",
-    "Velvet Hunter",
-    "Frost Rider",
-    "Breezy Scribe",
-    "Lunar Blade",
-    "Frost Phoenix",
-    "Dark Wolf",
-    "Scarlet Whisper",
-    "Dusk Shade",
-    "Shadow Whisper",
-    "Dark Whisper",
-    "Golden Scribe",
-    "Lunar Knight",
-    "Rapid Wanderer",
-    "Aurora Rider",
-    "Iron Wolf",
-    "Whisper Dancer",
-    "Shadow Scribe",
-    "Frost Wanderer",
-    "Golden Whisper",
-    "Storm Seeker",
-    "Crimson Whisper",
-    "Velvet Knight",
-    "Savage Seeker",
-    "Ivory Shade",
-    "Velvet Scribe",
-    "Dark Seeker",
-    "Scarlet Rider",
-    "Whisper Seeker",
-    "Aurora Wanderer",
-    "Obsidian Phoenix",
-    "Crimson Rider",
-    "Shadow Shade",
-    "Echo Wanderer",
-    "Savage Wanderer",
-    "Breezy Knight",
-    "Blue Hunter",
-    "Rapid Rider",
-    "Velvet Wanderer",
-    "Crimson Dragon",
-    "Whisper Rider",
-    "Lunar Scribe",
-    "Mystic Hunter",
-    "Aurora Whisper",
-    "Silver Shadow",
-    "Dusk Hunter",
-    "Golden Wanderer",
-    "Scarlet Hunter",
-    "Iron Wanderer",
-    "Obsidian Dragon",
-    "Aurora Hunter",
-    "Scarlet Phoenix",
-    "Echo Dragon",
-    "Blue Fox",
-    "Iron Knight",
-    "Storm Whisper",
-    "Storm Wanderer",
-    "Crimson Seeker",
-    "Golden Phoenix",
-    "Silver Rider",
-    "Obsidian Rider",
-    "Ivory Knight",
-    "Lunar Seeker",
-    "Silver Knight",
-    "Iron Shadow",
-    "Aurora Seeker",
-    "Storm Knight",
-    "Whisper Phoenix",
-    "Dawn Seeker",
-    "Mystic Fox",
-    "Dark Knight",
-    "Crimson Knight",
-    "Frost Hunter",
-    "Silver Seeker",
-    "Blue Wanderer",
-    "Lunar Wanderer",
-    "Dusk Wanderer",
-    "Aurora Shadow",
-    "Rapid Wolf",
-  ];
-  const [picked, setPicked] = useState(["users", "orders"]);
+  const [allTables, setAllTables] = useState([]);
+  const [tablesLoading, setTablesLoading] = useState(false);
+  const [picked, setPicked] = useState([]);
   const [basicSetupData, setBasicSetupData] = useState({ name: '', type: '', subType: '', description: '' });
   const [databaseSelectionData, setDatabaseSelectionData] = useState({ masterDatabase: '', masterSchema: '', compareDatabase: '', compareSchema: '' });
   const [pipelineConfigurationData, setPipelineConfigurationData] = useState({ exportFileName: '', exportMode: '' });
@@ -160,6 +52,40 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
     padding: "1.5rem",
     textAlign: "left",
   };
+
+  // Fetch tables when master database and schema are selected
+  useEffect(() => {
+    const fetchTables = async () => {
+      if (databaseSelectionData.masterDatabase && databaseSelectionData.masterSchema) {
+        setTablesLoading(true);
+        try {
+          const response = await axiosInstance.get(`/db-config/database-tables/${databaseSelectionData.masterDatabase}/${databaseSelectionData.masterSchema}`);
+          if (response.data.status === 'Success') {
+            setAllTables(response.data.result);
+            // Reset picked tables if they don't exist in the new table list
+            setPicked(prev => prev.filter(table => response.data.result.includes(table)));
+          } else {
+            message.error('Failed to fetch tables');
+            setAllTables([]);
+            setPicked([]);
+          }
+        } catch (error) {
+          console.error('Error fetching tables:', error);
+          message.error('Failed to fetch tables from database');
+          setAllTables([]);
+          setPicked([]);
+        } finally {
+          setTablesLoading(false);
+        }
+      } else {
+        setAllTables([]);
+        setPicked([]);
+      }
+    };
+
+    fetchTables();
+  }, [databaseSelectionData.masterDatabase, databaseSelectionData.masterSchema]);
+
   return (
     <div className={styles.createPipelineContainer}>
       <div className={styles.backButton}>
@@ -177,7 +103,13 @@ export const CreatePipeline = ({ handleSelectedComponent }) => {
             <DatabaseSelection initialValues={databaseSelectionData} onValuesChange={setDatabaseSelectionData} />
           </div>
           <div style={{ display: current === 2 ? 'block' : 'none' }}>
-            <TableSelector tables={allTables} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
+            {tablesLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                <Spin size="large" />
+              </div>
+            ) : (
+              <TableSelector tables={allTables} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
+            )}
           </div>
           <div style={{ display: current === 3 ? 'block' : 'none' }}>
             <PipelineConfiguration initialValues={pipelineConfigurationData} onValuesChange={setPipelineConfigurationData} />
