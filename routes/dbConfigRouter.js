@@ -167,4 +167,46 @@ router.delete("/delete-database/:name", async (req, res) => {
     });
   }
 });
+
+router.get("/database-schemas/:name", async (req, res) => {
+  try {
+    const { name } = req.params;
+    console.log("Fetching schemas for database:", name);
+
+    if (!(await credsExist(name))) {
+      return res.status(404).send({
+        status: "Error",
+        message: `Database credentials with ${name} name not found`,
+        result: {},
+      });
+    }
+
+    const creds = await getCreds(name);
+    const DB = (await import("../utils/DB.js")).default;
+    const db = new DB(creds);
+
+    // Connect to the database
+    await db.client.connect();
+
+    const sql = "SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'pg_catalog', 'pg_toast') AND schema_name NOT LIKE 'pg_temp_%' AND schema_name NOT LIKE 'pg_toast_temp_%' ORDER BY schema_name;";
+    const result = await db.executeQuery(sql);
+
+    // Close the connection
+    await db.client.end();
+
+    return res.status(200).send({
+      status: "Success",
+      message: "List of schemas for database",
+      result: result.rows.map(row => row.schema_name),
+    });
+  } catch (error) {
+    console.log("error:", error);
+    return res.status(500).send({
+      status: "Error",
+      message: error.message,
+      result: {},
+    });
+  }
+});
+
 export default router;
