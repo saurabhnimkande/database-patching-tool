@@ -40,6 +40,12 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
   const { token } = theme.useToken();
   const [current, setCurrent] = useState(0);
   const next = () => {
+    if (current === 0) {
+      if (!basicSetupData.name || !basicSetupData.type || !basicSetupData.subType) {
+        showMessage('error', 'Please fill in all required fields in Basic Setup');
+        return;
+      }
+    }
     setCurrent(current + 1);
   };
   const prev = () => {
@@ -58,6 +64,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
 
   // Initialize form data when editing an existing pipeline
   useEffect(() => {
+    console.log("running")
     if (pipelineData) {
       setBasicSetupData({
         name: pipelineData.name || '',
@@ -125,7 +132,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
 
   const handleSave = async () => {
     // Validate required fields
-    if (!basicSetupData.name || !basicSetupData.type) {
+    if (!basicSetupData.name || !basicSetupData.type || !basicSetupData.subType) {
       showMessage('error', 'Please fill in all required fields in Basic Setup');
       setCurrent(0);
       return;

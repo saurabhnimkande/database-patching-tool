@@ -22,17 +22,17 @@ export const BasicSetup = ({ initialValues, onValuesChange }) => {
         style={{ maxWidth: "50vw" }}
         onValuesChange={handleValuesChange}
       >
-        <Form.Item label="Name" name="name">
+        <Form.Item label="Name" name="name" rules={[{ required: true, message: 'Please enter the name!' }]}>
           <Input />
         </Form.Item>
-        <Form.Item label="Type" name="type">
+        <Form.Item label="Type" name="type" rules={[{ required: true, message: 'Please select a type!' }]}>
           <Select>
             <Select.Option value="generate">Generate</Select.Option>
             <Select.Option value="compare">Compare</Select.Option>
             <Select.Option value="extract-seed">Extract Seeds</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item label="Sub-Type" name="subType">
+        <Form.Item label="Sub-Type" name="subType" rules={[{ required: true, message: 'Please select a sub-type!' }]}>
           <Select>
             <Select.Option value="tables">Tables</Select.Option>
             <Select.Option value="views">Views</Select.Option>
