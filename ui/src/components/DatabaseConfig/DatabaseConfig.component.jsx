@@ -87,6 +87,7 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
           <div className={styles.nameContainer}>{name}</div>
         </Space>
       ),
+      ellipsis: true,
     },
     {
       title: "Creation Date",
@@ -104,6 +105,7 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
       title: "Description",
       dataIndex: "description",
       key: "description",
+      ellipsis: true,
     },
     {
       title: "Action",

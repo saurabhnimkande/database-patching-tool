@@ -16,6 +16,7 @@
 .componentContainer {
     padding: 1rem;
     flex-basis: 100%;
+    overflow: auto;
 }
 .actionButton {
     margin-bottom: 1rem;

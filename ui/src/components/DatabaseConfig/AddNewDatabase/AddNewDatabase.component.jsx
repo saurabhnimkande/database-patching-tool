@@ -101,7 +101,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
 
   return (
     <>
-      <Form form={form} labelCol={{ span: 5 }} wrapperCol={{ span: 14 }} layout="horizontal" style={{ maxWidth: "50vw" }}>
+      <Form form={form} labelCol={{ span: 5 }} wrapperCol={{ span: 14 }} layout="horizontal" style={{ maxWidth: "100%" }}>
         <Form.Item
           label="Name"
           name="name"
