@@ -1,12 +1,14 @@
-import { Space, Table, Tooltip, Spin } from "antd";
+import { Space, Table, Tooltip, Spin, Modal } from "antd";
 import { CaretRightOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { axiosInstance } from "../../../../utils/axios";
 import styles from "./PipelineTable.module.css";
 
-export const PipelineTable = ({ handleSelectedComponent, onEditPipeline }) => {
+export const PipelineTable = ({ onEditPipeline, showMessage }) => {
   const [pipelines, setPipelines] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [pipelineToDelete, setPipelineToDelete] = useState(null);
 
   useEffect(() => {
     const fetchPipelines = async () => {
@@ -24,6 +26,35 @@ export const PipelineTable = ({ handleSelectedComponent, onEditPipeline }) => {
 
     fetchPipelines();
   }, []);
+
+  const handleDelete = (record) => {
+    setPipelineToDelete(record);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axiosInstance.delete(`/pipelines/${pipelineToDelete.id}`);
+      showMessage('success', 'Pipeline deleted successfully');
+      // Refresh the list
+      const response = await axiosInstance.get('/pipelines/list');
+      if (response.data.status === 'Success') {
+        setPipelines(response.data.result);
+      }
+    } catch (error) {
+      console.error('Error deleting pipeline:', error);
+      showMessage('error', 'Failed to delete pipeline');
+    } finally {
+      setDeleteModalVisible(false);
+      setPipelineToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalVisible(false);
+    setPipelineToDelete(null);
+  };
+
   const columns = [
     {
       title: "",
@@ -78,10 +109,10 @@ export const PipelineTable = ({ handleSelectedComponent, onEditPipeline }) => {
       title: "Action",
       dataIndex: "action",
       key: "action",
-      render: () => (
+      render: (text, record) => (
         <Space size="middle">
           <Tooltip title="Delete Pipeline">
-            <DeleteOutlined className={styles.deleteButton} />
+            <DeleteOutlined className={styles.deleteButton} onClick={() => handleDelete(record)} />
           </Tooltip>
         </Space>
       ),
@@ -96,13 +127,26 @@ export const PipelineTable = ({ handleSelectedComponent, onEditPipeline }) => {
   }
 
   return (
-    <Table
-      columns={columns}
-      dataSource={pipelines}
-      pagination={{
-        defaultPageSize: 6,
-      }}
-      rowKey="id"
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={pipelines}
+        pagination={{
+          defaultPageSize: 6,
+        }}
+        rowKey="id"
+      />
+      <Modal
+        title="Delete Pipeline"
+        open={deleteModalVisible}
+        onOk={confirmDelete}
+        onCancel={cancelDelete}
+        okText="Delete"
+        cancelText="Cancel"
+        okType="danger"
+      >
+        <p>Are you sure you want to delete the pipeline "{pipelineToDelete?.name}"?</p>
+      </Modal>
+    </>
   );
 };

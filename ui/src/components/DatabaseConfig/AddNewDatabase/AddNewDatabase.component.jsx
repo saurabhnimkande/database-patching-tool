@@ -67,6 +67,8 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
   };
 
   const handleAddSubmit = async (data) => {
+    const now = new Date().toISOString();
+    data.created_at = now;
     handleFullScreenLoading(true, "Adding database credentials...");
     const response = await axiosInstance.post("/db-config/add-database", data);
     const resBody = response.data ?? {};
@@ -78,6 +80,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
   };
 
   const handleUpdateSubmit = async (data) => {
+    data.updated_at = new Date().toISOString();
     handleFullScreenLoading(true, "Updating database credentials...");
     const response = await axiosInstance.put(`/db-config/update-database/${data.name}`, data);
     const resBody = response.data ?? {};
@@ -109,7 +112,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
         </Form.Item>
 
         <Form.Item label="Type" name="type">
-          <Input disabled />
+          <Input disabled defaultValue={'PostgreSQL'} />
         </Form.Item>
 
         <Form.Item

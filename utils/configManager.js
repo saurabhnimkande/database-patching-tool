@@ -134,7 +134,7 @@ export async function updateCreds(name, updatedCreds) {
   const config = await readConfig();
   const index = config.db_creds.findIndex((el) => el.name === name);
   if (index !== -1) {
-    config.db_creds[index] = { ...config.db_creds[index], ...updatedCreds, lastUpdateDate: new Date().toISOString() };
+    config.db_creds[index] = { ...config.db_creds[index], ...updatedCreds };
     await writeConfig(config);
   }
 }

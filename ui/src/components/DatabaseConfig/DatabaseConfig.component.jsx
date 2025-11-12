@@ -35,7 +35,7 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
       const resBody = response.data ?? {};
       let databaseList = resBody.result ?? [];
       console.log('databaseList:', databaseList);
-      databaseList = databaseList.map((el, i) => ({...el, key: i, 'last-duration': "N/A", "last-success": "N/A"}));
+      databaseList = databaseList.map((el, i) => ({...el, key: i}));
       setDatabaseList(databaseList);
       handleFullScreenLoading(false, "");
     } catch (error) {
@@ -90,13 +90,15 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
     },
     {
       title: "Creation Date",
-      dataIndex: "last-success",
-      key: "last-success",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (date) => date ? new Date(date).toLocaleString() : "N/A",
     },
     {
       title: "Last update date",
-      dataIndex: "last-duration",
-      key: "last-duration",
+      dataIndex: "updated_at",
+      key: "updated_at",
+      render: (date) => date ? new Date(date).toLocaleString() : "N/A",
     },
     {
       title: "Description",

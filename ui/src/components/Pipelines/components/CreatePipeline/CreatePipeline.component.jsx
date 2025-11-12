@@ -8,7 +8,7 @@ import { PipelineConfiguration } from "./components/PipelineConfiguration/Pipeli
 import TableSelector from "./components/TableSelector/TableSelector.component";
 import { axiosInstance } from "../../../../utils/axios";
 
-export const CreatePipeline = ({ handleSelectedComponent, pipelineData }) => {
+export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMessage }) => {
   const [allTables, setAllTables] = useState([]);
   const [tablesLoading, setTablesLoading] = useState(false);
   const [picked, setPicked] = useState([]);
@@ -102,7 +102,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData }) => {
               setPicked(prev => prev.filter(table => response.data.result.includes(table)));
             }
           } else {
-            message.error('Failed to fetch tables');
+            showMessage('error', 'Failed to fetch tables');
             setAllTables([]);
             setPicked([]);
           }
@@ -126,13 +126,13 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData }) => {
   const handleSave = async () => {
     // Validate required fields
     if (!basicSetupData.name || !basicSetupData.type) {
-      message.error('Please fill in all required fields in Basic Setup');
+      showMessage('error', 'Please fill in all required fields in Basic Setup');
       setCurrent(0);
       return;
     }
 
     if (!databaseSelectionData.masterDatabase || !databaseSelectionData.masterSchema) {
-      message.error('Please select master database and schema');
+      showMessage('error', 'Please select master database and schema');
       setCurrent(1);
       return;
     }
@@ -163,17 +163,17 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData }) => {
       }
 
       if (response.data.status === 'Success') {
-        message.success(pipelineData ? 'Pipeline updated successfully!' : 'Pipeline created successfully!');
+        showMessage('success', pipelineData ? 'Pipeline updated successfully!' : 'Pipeline created successfully!');
         handleSelectedComponent('pipelines');
       } else {
-        message.error(response.data.message || `Failed to ${pipelineData ? 'update' : 'create'} pipeline`);
+        showMessage('error', response.data.message || `Failed to ${pipelineData ? 'update' : 'create'} pipeline`);
       }
-    } catch (error) {
-      console.error('Error saving pipeline:', error);
-      message.error(`Failed to ${pipelineData ? 'update' : 'create'} pipeline. Please try again.`);
-    } finally {
-      setSaving(false);
-    }
+        } catch (error) {
+          console.error('Error fetching tables:', error);
+          showMessage('error', 'Failed to fetch tables from database');
+          setAllTables([]);
+          setPicked([]);
+        }
   };
 
   return (

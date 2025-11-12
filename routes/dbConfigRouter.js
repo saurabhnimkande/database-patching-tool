@@ -5,12 +5,8 @@ const router = express.Router();
 
 router.post("/add-database", async (req, res) => {
   try {
-    const currentDateTimeISO = new Date().toISOString();
-    const creationDate = currentDateTimeISO;
-    const lastUpdateDate = null;
-
-    const { name, host, type, database, user, password, port, ssl, description } = req.body;
-    console.log("body:", name, type, host, database, user, password, port, ssl, description);
+    const { name, host, type, database, user, password, port, ssl, description, created_at, updated_at } = req.body;
+    console.log("body:", name, type, host, database, user, password, port, ssl, description, created_at, updated_at);
 
     if (await credsExist(name)) {
       return res.status(409).send({
@@ -30,8 +26,8 @@ router.post("/add-database", async (req, res) => {
       port,
       ssl,
       description,
-      creationDate,
-      lastUpdateDate,
+      created_at,
+      updated_at,
     });
     const config = await getCreds(name);
     console.log("config:", config);
@@ -102,7 +98,7 @@ router.get("/database-list", async (req, res) => {
 router.put("/update-database/:name", async (req, res) => {
   try {
     const { name } = req.params;
-    const { host, type, database, user, password, port, ssl, description } = req.body;
+    const { host, type, database, user, password, port, ssl, description, updated_at } = req.body;
     console.log("Updating database:", name);
 
     if (!(await credsExist(name))) {
@@ -122,6 +118,7 @@ router.put("/update-database/:name", async (req, res) => {
       port,
       ssl,
       description,
+      updated_at,
     });
     const updatedConfig = await getCreds(name);
     return res.status(200).send({
