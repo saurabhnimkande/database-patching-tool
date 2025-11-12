@@ -3,6 +3,7 @@ import { Checkbox, Input, Space, Typography } from "antd";
 import { FixedSizeList as List } from "react-window";
 import styles from "./TableSelector.module.css";
 import { SearchOutlined } from "@ant-design/icons";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searchable = true, disabled = false, title = "Tables" }) => {
   const [internalSelected, setInternalSelected] = useState(defaultSelected);
@@ -83,25 +84,29 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
               <Typography.Text type="secondary">No tables</Typography.Text>
             </Space>
           ) : (
-            <div style={{ padding: 8 }}>
-              <List
-                height={340}
-                itemCount={filtered.length}
-                itemSize={32}
-                width="100%"
-              >
-                {({ index, style }) => (
-                  <div style={style}>
-                    <Checkbox
-                      disabled={disabled}
-                      checked={selectedKeys.includes(filtered[index])}
-                      onChange={(e) => onItemToggle(filtered[index], e.target.checked)}
-                    >
-                      {filtered[index]}
-                    </Checkbox>
-                  </div>
+            <div style={{ padding: 8, height: '100%', width: "100%" }}>
+              <AutoSizer>
+                {({ height, width }) => (
+                  <List
+                    height={height}
+                    itemCount={filtered.length}
+                    itemSize={32}
+                    width={width + 10}
+                  >
+                    {({ index, style }) => (
+                      <div style={style}>
+                        <Checkbox
+                          disabled={disabled}
+                          checked={selectedKeys.includes(filtered[index])}
+                          onChange={(e) => onItemToggle(filtered[index], e.target.checked)}
+                        >
+                          {filtered[index]}
+                        </Checkbox>
+                      </div>
+                    )}
+                  </List>
                 )}
-              </List>
+              </AutoSizer>
             </div>
           )}
         </div>

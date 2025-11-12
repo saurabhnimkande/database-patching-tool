@@ -4,12 +4,7 @@ const { TextArea } = Input;
 import { axiosInstance } from "../../../../../../utils/axios";
 import styles from "./DatabaseSelection.module.css";
 
-export const DatabaseSelection = ({ initialValues, onValuesChange }) => {
-  const [form] = Form.useForm();
-
-  useEffect(() => {
-    form.setFieldsValue(initialValues);
-  }, [form, initialValues]);
+export const DatabaseSelection = ({ form }) => {
   const [databases, setDatabases] = useState([]);
   const [masterSchemas, setMasterSchemas] = useState([]);
   const [compareSchemas, setCompareSchemas] = useState([]);
@@ -56,27 +51,27 @@ export const DatabaseSelection = ({ initialValues, onValuesChange }) => {
   };
 
   const handleMasterDatabaseChange = (value) => {
-    onValuesChange(prev => ({ ...prev, masterDatabase: value }));
+    form.setFieldsValue({ masterDatabase: value });
     fetchSchemas(value, true);
   };
 
   const handleCompareDatabaseChange = (value) => {
-    onValuesChange(prev => ({ ...prev, compareDatabase: value }));
+    form.setFieldsValue({ compareDatabase: value });
     fetchSchemas(value, false);
   };
 
   const handleMasterSchemaChange = (value) => {
-    onValuesChange(prev => ({ ...prev, masterSchema: value }));
+    form.setFieldsValue({ masterSchema: value });
   };
 
   const handleCompareSchemaChange = (value) => {
-    onValuesChange(prev => ({ ...prev, compareSchema: value }));
+    form.setFieldsValue({ compareSchema: value });
   };
 
   const isLoadingAnySchema = loadingMasterSchemas || loadingCompareSchemas;
 
   return (
-    <div className={styles.databaseSelectionContainer}>
+    <div className={styles.databaseSelectionContainer} style={{ width: "100%" }}>
       {isLoadingAnySchema && (
         <div style={{
           position: 'absolute',
@@ -93,83 +88,81 @@ export const DatabaseSelection = ({ initialValues, onValuesChange }) => {
           <Spin size="large" />
         </div>
       )}
-      <Form form={form} layout="horizontal" style={{ width: "100%" }}>
-        <Row gutter={12}>
-          {/* Row 1 */}
-          <Col xs={24} md={12}>
-            <Form.Item label="Select master database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="masterDatabase">
-              <Select
-                style={{ width: "100%" }}
-                loading={loadingDatabases}
-                onChange={handleMasterDatabaseChange}
-                placeholder="Select a database"
-                disabled={isLoadingAnySchema}
-              >
-                {databases.map((db) => (
-                  <Select.Option key={db.name} value={db.name}>
-                    {db.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
+      <Row gutter={12}>
+        {/* Row 1 */}
+        <Col xs={24} md={12}>
+          <Form.Item label="Select master database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="masterDatabase">
+            <Select
+              style={{ width: "100%" }}
+              loading={loadingDatabases}
+              onChange={handleMasterDatabaseChange}
+              placeholder="Select a database"
+              disabled={isLoadingAnySchema}
+            >
+              {databases.map((db) => (
+                <Select.Option key={db.name} value={db.name}>
+                  {db.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
 
-          <Col xs={24} md={12}>
-            <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="masterSchema">
-              <Select
-                style={{ width: "60%" }}
-                loading={loadingMasterSchemas}
-                placeholder="Select a schema"
-                disabled={isLoadingAnySchema}
-                onChange={handleMasterSchemaChange}
-              >
-                {masterSchemas.map((schema) => (
-                  <Select.Option key={schema} value={schema}>
-                    {schema}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
+        <Col xs={24} md={12}>
+          <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="masterSchema">
+            <Select
+              style={{ width: "60%" }}
+              loading={loadingMasterSchemas}
+              placeholder="Select a schema"
+              disabled={isLoadingAnySchema}
+              onChange={handleMasterSchemaChange}
+            >
+              {masterSchemas.map((schema) => (
+                <Select.Option key={schema} value={schema}>
+                  {schema}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
 
-          {/* Row 2 */}
-          <Col xs={24} md={12}>
-            <Form.Item label="Select Compare database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="compareDatabase">
-              <Select
-                style={{ width: "100%" }}
-                loading={loadingDatabases}
-                onChange={handleCompareDatabaseChange}
-                placeholder="Select a database"
-                disabled={isLoadingAnySchema}
-              >
-                {databases.map((db) => (
-                  <Select.Option key={db.name} value={db.name}>
-                    {db.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
+        {/* Row 2 */}
+        <Col xs={24} md={12}>
+          <Form.Item label="Select Compare database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="compareDatabase">
+            <Select
+              style={{ width: "100%" }}
+              loading={loadingDatabases}
+              onChange={handleCompareDatabaseChange}
+              placeholder="Select a database"
+              disabled={isLoadingAnySchema}
+            >
+              {databases.map((db) => (
+                <Select.Option key={db.name} value={db.name}>
+                  {db.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
 
-          <Col xs={24} md={12}>
-            <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="compareSchema">
-              <Select
-                style={{ width: "60%" }}
-                loading={loadingCompareSchemas}
-                placeholder="Select a schema"
-                disabled={isLoadingAnySchema}
-                onChange={handleCompareSchemaChange}
-              >
-                {compareSchemas.map((schema) => (
-                  <Select.Option key={schema} value={schema}>
-                    {schema}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
+        <Col xs={24} md={12}>
+          <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="compareSchema">
+            <Select
+              style={{ width: "60%" }}
+              loading={loadingCompareSchemas}
+              placeholder="Select a schema"
+              disabled={isLoadingAnySchema}
+              onChange={handleCompareSchemaChange}
+            >
+              {compareSchemas.map((schema) => (
+                <Select.Option key={schema} value={schema}>
+                  {schema}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
+      </Row>
     </div>
   );
 };
