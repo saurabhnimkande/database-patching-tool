@@ -22,7 +22,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
   useEffect(() => {
     if (isEdit && initialData && formValues) {
       // Check if current values differ from initial data
-      const hasChanged = Object.keys(formValues).some(key => {
+      const hasChanged = Object.keys(formValues).some((key) => {
         return formValues[key] !== initialData[key];
       });
       setDisableSave(hasChanged);
@@ -37,17 +37,16 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
       console.log("response:", response);
       const resBody = response.data ?? {};
       handleFullScreenLoading(false, "");
-      openNotification(resBody.status, resBody.message);
-      if(resBody.status === 'Error') {
+      openNotification(resBody.status, resBody.message, "success");
+      if (resBody.status === "Error") {
         setDisableSave(true);
       } else {
         setDisableSave(false);
       }
-      
     } catch (error) {
       console.log("error:", error);
       handleFullScreenLoading(false, "");
-      openNotification("Error", error.message);
+      openNotification("Error", error.message, "error");
       setDisableSave(true);
     }
   };
@@ -62,7 +61,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
       }
     } catch (error) {
       console.error("Validation failed:", error);
-      openNotification("Error", error.message);
+      openNotification("Error", error.message, "error");
     }
   };
 
@@ -74,7 +73,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
     const resBody = response.data ?? {};
     console.log("resBody:", resBody);
     handleFullScreenLoading(false, "");
-    openNotification(resBody.status, resBody.message);
+    openNotification(resBody.status, resBody.message, resBody?.status?.toLowerCase());
     if (onSuccess) onSuccess();
     goBack();
   };
@@ -86,7 +85,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
     const resBody = response.data ?? {};
     console.log("resBody:", resBody);
     handleFullScreenLoading(false, "");
-    openNotification(resBody.status, resBody.message);
+    openNotification(resBody.status, resBody.message, resBody?.status?.toLowerCase());
     if (onSuccess) onSuccess();
     goBack();
   };
@@ -112,7 +111,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
         </Form.Item>
 
         <Form.Item label="Type" name="type">
-          <Input disabled defaultValue={'PostgreSQL'} />
+          <Input disabled defaultValue={"PostgreSQL"} />
         </Form.Item>
 
         <Form.Item

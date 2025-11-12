@@ -41,7 +41,7 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
     } catch (error) {
       console.log("error:", error);
       handleFullScreenLoading(false, "");
-      openNotification("Error", error.message);
+      openNotification("Error", error.message, 'error');
     }
   };
 
@@ -49,11 +49,11 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
     try {
       handleFullScreenLoading(true, "Deleting database...");
       await axiosInstance.delete(`/db-config/delete-database/${name}`);
-      openNotification("Success", "Database deleted successfully");
+      openNotification("Success", "Database deleted successfully", 'success');
       fetchAddedDatabaseList(); // Refresh the list
     } catch (error) {
       console.log("error:", error);
-      openNotification("Error", error.response?.data?.message || error.message);
+      openNotification("Error", error.response?.data?.message || error.message, 'error');
     } finally {
       handleFullScreenLoading(false, "");
     }
