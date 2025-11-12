@@ -94,16 +94,19 @@ export const PipelineTable = ({ onEditPipeline, showMessage }) => {
       title: "Last Success",
       dataIndex: "last-success",
       key: "last-success",
+      render: (lastSuccess) => lastSuccess ? lastSuccess : "N/A",
     },
     {
       title: "Last Duration",
       dataIndex: "last-duration",
       key: "last-duration",
+      render: (lastDuration) => lastDuration ? lastDuration : "N/A",
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+      render: (description) => description ? description : "N/A",
     },
     {
       title: "Action",
