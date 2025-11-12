@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Checkbox, Input, Space, Typography } from "antd";
+import { FixedSizeList as List } from "react-window";
 import styles from "./TableSelector.module.css";
 import { SearchOutlined } from "@ant-design/icons";
 
@@ -77,17 +78,32 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
         </Checkbox>
 
         <div className={styles.tablesListingContainer}>
-          <Space direction="vertical" style={{ width: "100%", padding: 8 }}>
-            {filtered.length === 0 ? (
+          {filtered.length === 0 ? (
+            <Space direction="vertical" style={{ width: "100%", padding: 8 }}>
               <Typography.Text type="secondary">No tables</Typography.Text>
-            ) : (
-              filtered.map((name) => (
-                <Checkbox key={name} disabled={disabled} checked={selectedKeys.includes(name)} onChange={(e) => onItemToggle(name, e.target.checked)}>
-                  {name}
-                </Checkbox>
-              ))
-            )}
-          </Space>
+            </Space>
+          ) : (
+            <div style={{ padding: 8 }}>
+              <List
+                height={340}
+                itemCount={filtered.length}
+                itemSize={32}
+                width="100%"
+              >
+                {({ index, style }) => (
+                  <div style={style}>
+                    <Checkbox
+                      disabled={disabled}
+                      checked={selectedKeys.includes(filtered[index])}
+                      onChange={(e) => onItemToggle(filtered[index], e.target.checked)}
+                    >
+                      {filtered[index]}
+                    </Checkbox>
+                  </div>
+                )}
+              </List>
+            </div>
+          )}
         </div>
 
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
