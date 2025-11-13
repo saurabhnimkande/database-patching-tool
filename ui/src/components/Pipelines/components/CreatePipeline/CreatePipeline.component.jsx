@@ -1,4 +1,4 @@
-import { Button, message, Steps, theme, Spin, Form } from "antd";
+import { Button, message, Steps, theme, Form } from "antd";
 import { SmileOutlined, SolutionOutlined, UserOutlined } from "@ant-design/icons";
 import styles from "./CreatePipeline.module.css";
 import { useState, useEffect } from "react";
@@ -9,10 +9,9 @@ import TableSelector from "./components/TableSelector/TableSelector.component";
 import { axiosInstance } from "../../../../utils/axios";
 import { pipelineTypes } from "../../../../config/pipelineTypes.js";
 
-export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMessage }) => {
+export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMessage, handleFullScreenLoading }) => {
   const [form] = Form.useForm();
   const [allTables, setAllTables] = useState([]);
-  const [tablesLoading, setTablesLoading] = useState(false);
   const [picked, setPicked] = useState([]);
   const [saving, setSaving] = useState(false);
 
@@ -51,6 +50,18 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
         await form.validateFields(fieldsToValidate);
       } catch {
         showMessage('error', 'Please fill in all required fields in Basic Setup');
+        return;
+      }
+    } else if (current === 1) {
+      try {
+        const type = form.getFieldValue('type');
+        const fieldsToValidate = ['masterDatabase', 'masterSchema'];
+        if (type === 'compare') {
+          fieldsToValidate.push('compareDatabase', 'compareSchema');
+        }
+        await form.validateFields(fieldsToValidate);
+      } catch {
+        showMessage('error', 'Please fill in all required fields in Database Selection');
         return;
       }
     }
@@ -97,7 +108,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
   useEffect(() => {
     const fetchTables = async () => {
       if (masterDatabase && masterSchema) {
-        setTablesLoading(true);
+        handleFullScreenLoading(true, "Loading tables...");
         try {
           const response = await axiosInstance.get(`/db-config/database-tables/${masterDatabase}/${masterSchema}`);
           if (response.data.status === 'Success') {
@@ -120,7 +131,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
           setAllTables([]);
           setPicked([]);
         } finally {
-          setTablesLoading(false);
+          handleFullScreenLoading(false, "");
         }
       } else {
         setAllTables([]);
@@ -129,7 +140,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
     };
 
     fetchTables();
-  }, [masterDatabase, masterSchema, pipelineData]);
+  }, [masterDatabase, masterSchema, pipelineData, handleFullScreenLoading]);
 
   const handleSave = async () => {
     try {
@@ -187,16 +198,10 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
               <BasicSetup />
             </div>
             <div style={{ display: current === 1 ? 'block' : 'none' }}>
-              <DatabaseSelection form={form} />
+              <DatabaseSelection form={form} handleFullScreenLoading={handleFullScreenLoading} />
             </div>
             <div style={{ display: current === 2 ? 'block' : 'none' }}>
-              {tablesLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-                  <Spin size="large" />
-                </div>
-              ) : (
-                <TableSelector tables={allTables} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
-              )}
+              <TableSelector tables={allTables} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
             </div>
             <div style={{ display: current === 3 ? 'block' : 'none' }}>
               <PipelineConfiguration />

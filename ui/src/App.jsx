@@ -45,7 +45,7 @@ function App() {
       setSelectedComponent(<Pipelines handleSelectedComponent={handleSelectedComponent} showMessage={showMessage} />);
       setSelectedComponentName("Pipelines");
     } else if (componentName === "create-new-pipeline") {
-      setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} pipelineData={pipelineData} showMessage={showMessage} />);
+      setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} pipelineData={pipelineData} showMessage={showMessage} handleFullScreenLoading={handleFullScreenLoading} />);
       setSelectedComponentName(pipelineData ? "Edit Pipeline" : "Create New Pipeline");
     } else if (componentName === "db-config") {
       setSelectedComponent(<DatabaseConfig handleSelectedComponent={handleSelectedComponent} handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} />);

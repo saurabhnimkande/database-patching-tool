@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Checkbox, Input, Space, Typography } from "antd";
+import { Checkbox, Input, Space, Switch, Typography } from "antd";
 import { FixedSizeList as List } from "react-window";
 import styles from "./TableSelector.module.css";
 import { SearchOutlined } from "@ant-design/icons";
@@ -11,6 +11,7 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
   const selectedKeys = isControlled ? selected : internalSelected;
 
   const [query, setQuery] = useState("");
+  const [dynamicSelectionEnabled, setDynamicSelectionEnabled] = useState(false);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return tables || [];
@@ -53,6 +54,10 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
   return (
     <div className={styles.tableSelectorContainer}>
       <Space direction="vertical" style={{ width: "100%", height: "100%" }} size="small">
+        <Space align="baseline" style={{ width: "100%" }}>
+          <Typography.Text>Dynamic Dataset Selection</Typography.Text>
+        <Switch checked={dynamicSelectionEnabled} onChange={setDynamicSelectionEnabled} />
+        </Space>
         <Space align="baseline" style={{ justifyContent: "space-between", width: "100%" }}>
           <Typography.Text strong>{title}</Typography.Text>
           <Typography.Text type="secondary">
@@ -65,12 +70,12 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
             prefix={<SearchOutlined />}
             className={styles.searchBox}
             allowClear
-            disabled={disabled}
+            disabled={disabled || dynamicSelectionEnabled}
             onChange={(e) => setQuery(e.target.value)}
           />
         )}
         <Checkbox
-          disabled={disabled || filtered.length === 0}
+          disabled={disabled || filtered.length === 0 || dynamicSelectionEnabled}
           indeterminate={indeterminate}
           checked={allVisibleChecked}
           onChange={(e) => toggleAllVisible(e.target.checked)}
@@ -96,7 +101,7 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
                     {({ index, style }) => (
                       <div style={style}>
                         <Checkbox
-                          disabled={disabled}
+                          disabled={disabled || dynamicSelectionEnabled}
                           checked={selectedKeys.includes(filtered[index])}
                           onChange={(e) => onItemToggle(filtered[index], e.target.checked)}
                         >
@@ -112,7 +117,7 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
         </div>
 
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-          <Typography.Link onClick={() => setSelected([])} aria-label="Clear selection" style={{ userSelect: "none" }}>
+          <Typography.Link onClick={dynamicSelectionEnabled ? undefined : () => setSelected([])} aria-label="Clear selection" style={{ userSelect: "none", color: dynamicSelectionEnabled ? '#ccc' : undefined, cursor: dynamicSelectionEnabled ? 'not-allowed' : 'pointer' }}>
             Clear all
           </Typography.Link>
         </Space>
