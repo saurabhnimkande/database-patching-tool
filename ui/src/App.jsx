@@ -7,6 +7,7 @@ import { Layout, ConfigProvider, Spin, Typography, notification, App as AntdApp 
 import { CreatePipeline } from "./components/Pipelines/components/CreatePipeline/CreatePipeline.component";
 import { DatabaseConfig } from "./components/DatabaseConfig/DatabaseConfig.component";
 import { LoadingOutlined } from "@ant-design/icons";
+import {ProgressIndicator} from "./components/ProgressIndicator/ProgressIndicator.component";
 const { Header, Sider, Content } = Layout;
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
   const [fullScreenLoading, setFullScreenLoading] = useState(false);
   const [fullScreenLoadingMessage, setFullScreenLoadingMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [progresses, setProgresses] = useState([]);
 
   const openNotification = (message = "", description = "", type = 'open') => {
     notificationApi[type]({
@@ -58,6 +60,11 @@ function App() {
 
   useEffect(() => {
     handleSelectedComponent("pipelines");
+    // Test data for progress indicator
+    setProgresses([
+      { id: 1, name: 'Patching users table', progress: 45 },
+      { id: 2, name: 'Seeding data for products', progress: 78 },
+    ]);
   }, []);
 
   return (
@@ -137,6 +144,7 @@ function App() {
             </Header>
             <Content>{selectedComponent}</Content>
           </Layout>
+          <ProgressIndicator progresses={progresses} />
         </Layout>
       </ConfigProvider>
     </AntdApp>

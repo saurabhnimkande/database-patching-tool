@@ -1,0 +1,50 @@
+.container {
+  position: fixed;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 8px 16px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  padding-top: 1rem;
+  border-radius: 6px 6px 0px 0px;
+  padding-bottom: 1rem;
+  width: 60%;
+  left: 20%;
+}
+
+.progressItem {
+  margin-bottom: 1rem;
+}
+
+.progressItem:last-child {
+  margin-bottom: 0;
+}
+
+.processName {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.progressBar {
+  margin: 0;
+}
+
+.expandIcon {
+  position: absolute;
+  top: -14px;
+  right: -13px;
+  width: 28px;
+  height: 28px;
+  background-color: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 1001;
+}
