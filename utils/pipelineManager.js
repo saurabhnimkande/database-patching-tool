@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
+import { v4 as uuidv4 } from "uuid";
 
 const CONFIG_DIR = path.join(os.homedir(), ".database-patching-tool");
 const PIPELINES_FILE = path.join(CONFIG_DIR, "pipelines.json");
@@ -50,7 +51,7 @@ async function writePipelines(data) {
 export async function savePipeline(pipeline) {
   const pipelinesData = await readPipelines();
   const newPipeline = {
-    id: Date.now().toString(),
+    id: uuidv4(),
     ...pipeline,
     createdAt: new Date().toISOString(),
     status: 'Ready to start',

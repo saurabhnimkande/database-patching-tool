@@ -24,7 +24,8 @@
     "inquirer": "^12.5.2",
     "inquirer-file-selector": "^0.6.2",
     "nanospinner": "^1.2.2",
-    "pg": "^8.14.1"
+    "pg": "^8.14.1",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
