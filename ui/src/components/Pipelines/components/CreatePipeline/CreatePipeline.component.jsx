@@ -7,6 +7,7 @@ import { DatabaseSelection } from "./components/DatabaseSelection/DatabaseSelect
 import { PipelineConfiguration } from "./components/PipelineConfiguration/PipelineConfiguration.component";
 import TableSelector from "./components/TableSelector/TableSelector.component";
 import { axiosInstance } from "../../../../utils/axios";
+import { pipelineTypes } from "../../../../utils/pipelineTypes.js";
 
 export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMessage }) => {
   const [form] = Form.useForm();
@@ -42,7 +43,12 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
   const next = async () => {
     if (current === 0) {
       try {
-        await form.validateFields(['name', 'type', 'subType']);
+        const type = form.getFieldValue('type');
+        const fieldsToValidate = ['name', 'type'];
+        if (type && pipelineTypes[type]?.subtypes.length > 0) {
+          fieldsToValidate.push('subType');
+        }
+        await form.validateFields(fieldsToValidate);
       } catch {
         showMessage('error', 'Please fill in all required fields in Basic Setup');
         return;
