@@ -7,7 +7,7 @@ import { DatabaseSelection } from "./components/DatabaseSelection/DatabaseSelect
 import { PipelineConfiguration } from "./components/PipelineConfiguration/PipelineConfiguration.component";
 import TableSelector from "./components/TableSelector/TableSelector.component";
 import { axiosInstance } from "../../../../utils/axios";
-import { pipelineTypes } from "../../../../utils/pipelineTypes.js";
+import { pipelineTypes } from "../../../../config/pipelineTypes.js";
 
 export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMessage }) => {
   const [form] = Form.useForm();

@@ -5,6 +5,7 @@ import { axiosInstance } from "../../../../../../utils/axios";
 import styles from "./DatabaseSelection.module.css";
 
 export const DatabaseSelection = ({ form }) => {
+  const type = Form.useWatch('type', form);
   const [databases, setDatabases] = useState([]);
   const [masterSchemas, setMasterSchemas] = useState([]);
   const [compareSchemas, setCompareSchemas] = useState([]);
@@ -126,42 +127,46 @@ export const DatabaseSelection = ({ form }) => {
           </Form.Item>
         </Col>
 
-        {/* Row 2 */}
-        <Col xs={24} md={12}>
-          <Form.Item label="Select Compare database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="compareDatabase">
-            <Select
-              style={{ width: "100%" }}
-              loading={loadingDatabases}
-              onChange={handleCompareDatabaseChange}
-              placeholder="Select a database"
-              disabled={isLoadingAnySchema}
-            >
-              {databases.map((db) => (
-                <Select.Option key={db.name} value={db.name}>
-                  {db.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
+        {/* Row 2 - Only show for compare type */}
+        {type === 'compare' && (
+          <>
+            <Col xs={24} md={12}>
+              <Form.Item label="Select Compare database" labelCol={{ flex: "180px" }} wrapperCol={{ flex: "auto" }} name="compareDatabase">
+                <Select
+                  style={{ width: "100%" }}
+                  loading={loadingDatabases}
+                  onChange={handleCompareDatabaseChange}
+                  placeholder="Select a database"
+                  disabled={isLoadingAnySchema}
+                >
+                  {databases.map((db) => (
+                    <Select.Option key={db.name} value={db.name}>
+                      {db.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
 
-        <Col xs={24} md={12}>
-          <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="compareSchema">
-            <Select
-              style={{ width: "60%" }}
-              loading={loadingCompareSchemas}
-              placeholder="Select a schema"
-              disabled={isLoadingAnySchema}
-              onChange={handleCompareSchemaChange}
-            >
-              {compareSchemas.map((schema) => (
-                <Select.Option key={schema} value={schema}>
-                  {schema}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
+            <Col xs={24} md={12}>
+              <Form.Item label="Select Schema" labelCol={{ flex: "150px" }} wrapperCol={{ flex: "auto" }} name="compareSchema">
+                <Select
+                  style={{ width: "60%" }}
+                  loading={loadingCompareSchemas}
+                  placeholder="Select a schema"
+                  disabled={isLoadingAnySchema}
+                  onChange={handleCompareSchemaChange}
+                >
+                  {compareSchemas.map((schema) => (
+                    <Select.Option key={schema} value={schema}>
+                      {schema}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </>
+        )}
       </Row>
     </div>
   );

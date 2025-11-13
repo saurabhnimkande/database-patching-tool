@@ -1,5 +1,5 @@
 import { Form, Input, Select } from "antd";
-import { pipelineTypes } from "../../../../../../utils/pipelineTypes.js";
+import { pipelineTypes } from "../../../../../../config/pipelineTypes.js";
 
 const { TextArea } = Input;
 

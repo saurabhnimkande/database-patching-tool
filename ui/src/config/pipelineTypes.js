@@ -3,7 +3,8 @@ export const pipelineTypes = {
     label: 'Generate',
     subtypes: [
       { value: 'tables', label: 'Tables' },
-      { value: 'views', label: 'Views' }
+      { value: 'views', label: 'Views' },
+      { value: 'seed data', label: 'Seed Data' }
     ]
   },
   compare: {
