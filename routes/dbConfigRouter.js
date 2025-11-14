@@ -1,6 +1,7 @@
 import express from "express";
 import { credsExist, getAllCreds, getCreds, saveCreds, updateCreds, deleteCreds } from "../utils/configManager.js";
 import { validateDatabaseCredentials } from "../utils/dbValidator.js";
+import DB from "../utils/DB.js";
 const router = express.Router();
 
 router.post("/add-database", async (req, res) => {
@@ -179,7 +180,6 @@ router.get("/database-schemas/:name", async (req, res) => {
     }
 
     const creds = await getCreds(name);
-    const DB = (await import("../utils/DB.js")).default;
     const db = new DB(creds);
 
     // Connect to the database
@@ -220,7 +220,6 @@ router.get("/database-tables/:name/:schema", async (req, res) => {
     }
 
     const creds = await getCreds(name);
-    const DB = (await import("../utils/DB.js")).default;
     const db = new DB(creds);
 
     // Connect to the database
@@ -261,7 +260,6 @@ router.get("/database-views/:name/:schema", async (req, res) => {
     }
 
     const creds = await getCreds(name);
-    const DB = (await import("../utils/DB.js")).default;
     const db = new DB(creds);
 
     // Connect to the database
