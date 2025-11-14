@@ -14,6 +14,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
   const [allDataset, setAllDataset] = useState([]);
   const [picked, setPicked] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [dynamicDatasetSelection, setDynamicDatasetSelection] = useState(false);
 
 
   const steps = [
@@ -97,6 +98,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
         exportFileName: pipelineData.exportFileName || '',
         exportMode: pipelineData.exportMode || '',
       });
+      setDynamicDatasetSelection(pipelineData.dynamicDatasetSelection || false);
       // Don't set picked here - it will be set after tables are loaded
     } else {
       // Reset to empty state when creating new pipeline
@@ -163,7 +165,8 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
         masterSchema: values.masterSchema,
         compareDatabase: values.compareDatabase,
         compareSchema: values.compareSchema,
-        selectedDataset: picked,
+        dynamicDatasetSelection: dynamicDatasetSelection,
+        ...(dynamicDatasetSelection ? {} : { selectedDataset: picked }),
         exportFileName: values.exportFileName,
         exportMode: values.exportMode,
       };
@@ -209,7 +212,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
               <DatabaseSelection form={form} handleFullScreenLoading={handleFullScreenLoading} />
             </div>
             <div style={{ display: current === 2 ? 'block' : 'none' }}>
-              <DatasetSelector items={allDataset} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
+              <DatasetSelector items={allDataset} selected={picked} onChange={setPicked} dynamicDatasetSelection={dynamicDatasetSelection} setDynamicDatasetSelection={setDynamicDatasetSelection} searchable title="Select Dataset" />
             </div>
             <div style={{ display: current === 3 ? 'block' : 'none' }}>
               <PipelineConfiguration />

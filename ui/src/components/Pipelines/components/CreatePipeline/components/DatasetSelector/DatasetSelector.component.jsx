@@ -5,13 +5,12 @@ import styles from "./DatasetSelector.module.css";
 import { SearchOutlined } from "@ant-design/icons";
 import AutoSizer from "react-virtualized-auto-sizer";
 
-const DatasetSelector = ({ items, selected, defaultSelected = [], onChange, searchable = true, disabled = false, title = "Items" }) => {
+const DatasetSelector = ({ items, selected, defaultSelected = [], onChange, dynamicDatasetSelection, setDynamicDatasetSelection, searchable = true, disabled = false, title = "Items" }) => {
   const [internalSelected, setInternalSelected] = useState(defaultSelected);
   const isControlled = selected !== undefined;
   const selectedKeys = isControlled ? selected : internalSelected;
 
   const [query, setQuery] = useState("");
-  const [dynamicSelectionEnabled, setDynamicSelectionEnabled] = useState(false);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return items || [];
@@ -56,7 +55,7 @@ const DatasetSelector = ({ items, selected, defaultSelected = [], onChange, sear
       <Space direction="vertical" style={{ width: "100%", height: "100%" }} size="small">
         <Space align="baseline" style={{ width: "100%" }}>
           <Typography.Text>Dynamic Dataset Selection</Typography.Text>
-        <Switch checked={dynamicSelectionEnabled} onChange={setDynamicSelectionEnabled} />
+        <Switch checked={dynamicDatasetSelection} onChange={setDynamicDatasetSelection} />
         </Space>
         <Space align="baseline" style={{ justifyContent: "space-between", width: "100%" }}>
           <Typography.Text strong>{title}</Typography.Text>
@@ -70,12 +69,12 @@ const DatasetSelector = ({ items, selected, defaultSelected = [], onChange, sear
             prefix={<SearchOutlined />}
             className={styles.searchBox}
             allowClear
-            disabled={disabled || dynamicSelectionEnabled}
+            disabled={disabled || dynamicDatasetSelection}
             onChange={(e) => setQuery(e.target.value)}
           />
         )}
         <Checkbox
-          disabled={disabled || filtered.length === 0 || dynamicSelectionEnabled}
+          disabled={disabled || filtered.length === 0 || dynamicDatasetSelection}
           indeterminate={indeterminate}
           checked={allVisibleChecked}
           onChange={(e) => toggleAllVisible(e.target.checked)}
@@ -101,7 +100,7 @@ const DatasetSelector = ({ items, selected, defaultSelected = [], onChange, sear
                     {({ index, style }) => (
                       <div style={style}>
                         <Checkbox
-                          disabled={disabled || dynamicSelectionEnabled}
+                          disabled={disabled || dynamicDatasetSelection}
                           checked={selectedKeys.includes(filtered[index])}
                           onChange={(e) => onItemToggle(filtered[index], e.target.checked)}
                         >
@@ -117,7 +116,7 @@ const DatasetSelector = ({ items, selected, defaultSelected = [], onChange, sear
         </div>
 
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-          <Typography.Link onClick={dynamicSelectionEnabled ? undefined : () => setSelected([])} aria-label="Clear selection" style={{ userSelect: "none", color: dynamicSelectionEnabled ? '#ccc' : undefined, cursor: dynamicSelectionEnabled ? 'not-allowed' : 'pointer' }}>
+          <Typography.Link onClick={dynamicDatasetSelection ? undefined : () => setSelected([])} aria-label="Clear selection" style={{ userSelect: "none", color: dynamicDatasetSelection ? '#ccc' : undefined, cursor: dynamicDatasetSelection ? 'not-allowed' : 'pointer' }}>
             Clear all
           </Typography.Link>
         </Space>
