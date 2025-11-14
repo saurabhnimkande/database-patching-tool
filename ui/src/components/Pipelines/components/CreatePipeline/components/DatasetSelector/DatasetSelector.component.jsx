@@ -1,11 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { Checkbox, Input, Space, Switch, Typography } from "antd";
 import { FixedSizeList as List } from "react-window";
-import styles from "./TableSelector.module.css";
+import styles from "./DatasetSelector.module.css";
 import { SearchOutlined } from "@ant-design/icons";
 import AutoSizer from "react-virtualized-auto-sizer";
 
-const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searchable = true, disabled = false, title = "Tables" }) => {
+const DatasetSelector = ({ items, selected, defaultSelected = [], onChange, searchable = true, disabled = false, title = "Items" }) => {
   const [internalSelected, setInternalSelected] = useState(defaultSelected);
   const isControlled = selected !== undefined;
   const selectedKeys = isControlled ? selected : internalSelected;
@@ -14,10 +14,10 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
   const [dynamicSelectionEnabled, setDynamicSelectionEnabled] = useState(false);
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return tables || [];
+    if (!query.trim()) return items || [];
     const q = query.trim().toLowerCase();
-    return (tables || []).filter((t) => t.toLowerCase().includes(q));
-  }, [tables, query]);
+    return (items || []).filter((t) => t.toLowerCase().includes(q));
+  }, [items, query]);
 
   const allVisibleChecked = filtered.length > 0 && filtered.every((t) => selectedKeys.includes(t));
   const someVisibleChecked = filtered.some((t) => selectedKeys.includes(t));
@@ -52,7 +52,7 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
   }, [isControlled, selected && selected.join("|")]);
 
   return (
-    <div className={styles.tableSelectorContainer}>
+    <div className={styles.datasetSelectorContainer}>
       <Space direction="vertical" style={{ width: "100%", height: "100%" }} size="small">
         <Space align="baseline" style={{ width: "100%" }}>
           <Typography.Text>Dynamic Dataset Selection</Typography.Text>
@@ -61,7 +61,7 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
         <Space align="baseline" style={{ justifyContent: "space-between", width: "100%" }}>
           <Typography.Text strong>{title}</Typography.Text>
           <Typography.Text type="secondary">
-            {selectedKeys.length}/{tables?.length || 0} selected
+            {selectedKeys.length}/{items?.length || 0} selected
           </Typography.Text>
         </Space>
         {searchable && (
@@ -83,10 +83,10 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
           Select all {filtered.length > 0 ? `(${filtered.length} visible)` : ""}
         </Checkbox>
 
-        <div className={styles.tablesListingContainer}>
+        <div className={styles.datasetsListingContainer}>
           {filtered.length === 0 ? (
             <Space direction="vertical" style={{ width: "100%", padding: 8 }}>
-              <Typography.Text type="secondary">No tables</Typography.Text>
+              <Typography.Text type="secondary">No items</Typography.Text>
             </Space>
           ) : (
             <div style={{ padding: 8, height: '100%', width: "100%" }}>
@@ -126,4 +126,4 @@ const TableSelector = ({ tables, selected, defaultSelected = [], onChange, searc
   );
 };
 
-export default TableSelector;
+export default DatasetSelector;

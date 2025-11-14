@@ -5,13 +5,13 @@ import { useState, useEffect } from "react";
 import { BasicSetup } from "./components/BasicSetup/BasicSetup.component";
 import { DatabaseSelection } from "./components/DatabaseSelection/DatabaseSelection.component";
 import { PipelineConfiguration } from "./components/PipelineConfiguration/PipelineConfiguration.component";
-import TableSelector from "./components/TableSelector/TableSelector.component";
+import DatasetSelector from "./components/DatasetSelector/DatasetSelector.component";
 import { axiosInstance } from "../../../../utils/axios";
 import { pipelineTypes } from "../../../../config/pipelineTypes.js";
 
 export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMessage, handleFullScreenLoading }) => {
   const [form] = Form.useForm();
-  const [allTables, setAllTables] = useState([]);
+  const [allDataset, setAllDataset] = useState([]);
   const [picked, setPicked] = useState([]);
   const [saving, setSaving] = useState(false);
 
@@ -39,6 +39,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
   const [current, setCurrent] = useState(0);
   const masterDatabase = Form.useWatch('masterDatabase', form);
   const masterSchema = Form.useWatch('masterSchema', form);
+  const subType = Form.useWatch('subType', form);
   const next = async () => {
     if (current === 0) {
       try {
@@ -104,15 +105,20 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
     }
   }, [pipelineData, form]);
 
-  // Fetch tables when master database and schema are selected
+  // Fetch tables/views when master database and schema are selected
   useEffect(() => {
-    const fetchTables = async () => {
-      if (masterDatabase && masterSchema) {
-        handleFullScreenLoading(true, "Loading tables...");
+    const fetchData = async () => {
+      if (masterDatabase && masterSchema && subType) {
+        const isViews = subType === 'views';
+        const loadingText = `Loading ${isViews ? 'views' : 'tables'}...`;
+        handleFullScreenLoading(true, loadingText);
         try {
-          const response = await axiosInstance.get(`/db-config/database-tables/${masterDatabase}/${masterSchema}`);
+          const endpoint = isViews
+            ? `/db-config/database-views/${masterDatabase}/${masterSchema}`
+            : `/db-config/database-tables/${masterDatabase}/${masterSchema}`;
+          const response = await axiosInstance.get(endpoint);
           if (response.data.status === 'Success') {
-            setAllTables(response.data.result);
+            setAllDataset(response.data.result);
             // For editing: set picked tables to the saved selection, filtered to available tables
             // For creating: keep current picked tables, filtered to available tables
             if (pipelineData) {
@@ -121,26 +127,28 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
               setPicked(prev => prev.filter(table => response.data.result.includes(table)));
             }
           } else {
-            showMessage('error', 'Failed to fetch tables');
-            setAllTables([]);
+            const itemType = isViews ? 'views' : 'tables';
+            showMessage('error', `Failed to fetch ${itemType}`);
+            setAllDataset([]);
             setPicked([]);
           }
         } catch (error) {
-          console.error('Error fetching tables:', error);
-          message.error('Failed to fetch tables from database');
-          setAllTables([]);
+          console.error(`Error fetching ${subType === 'views' ? 'views' : 'tables'}:`, error);
+          const itemType = subType === 'views' ? 'views' : 'tables';
+          message.error(`Failed to fetch ${itemType} from database`);
+          setAllDataset([]);
           setPicked([]);
         } finally {
           handleFullScreenLoading(false, "");
         }
       } else {
-        setAllTables([]);
+        setAllDataset([]);
         setPicked([]);
       }
     };
 
-    fetchTables();
-  }, [masterDatabase, masterSchema, pipelineData, handleFullScreenLoading]);
+    fetchData();
+  }, [masterDatabase, masterSchema, subType, pipelineData, handleFullScreenLoading, showMessage]);
 
   const handleSave = async () => {
     try {
@@ -201,7 +209,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
               <DatabaseSelection form={form} handleFullScreenLoading={handleFullScreenLoading} />
             </div>
             <div style={{ display: current === 2 ? 'block' : 'none' }}>
-              <TableSelector tables={allTables} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
+              <DatasetSelector items={allDataset} selected={picked} onChange={setPicked} searchable title="Select Dataset" />
             </div>
             <div style={{ display: current === 3 ? 'block' : 'none' }}>
               <PipelineConfiguration />
