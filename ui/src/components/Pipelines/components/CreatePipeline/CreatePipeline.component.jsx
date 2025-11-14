@@ -122,7 +122,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
             // For editing: set picked tables to the saved selection, filtered to available tables
             // For creating: keep current picked tables, filtered to available tables
             if (pipelineData) {
-              setPicked((pipelineData.selectedTables || []).filter(table => response.data.result.includes(table)));
+              setPicked((pipelineData.selectedDataset || []).filter(table => response.data.result.includes(table)));
             } else {
               setPicked(prev => prev.filter(table => response.data.result.includes(table)));
             }
@@ -163,7 +163,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
         masterSchema: values.masterSchema,
         compareDatabase: values.compareDatabase,
         compareSchema: values.compareSchema,
-        selectedTables: picked,
+        selectedDataset: picked,
         exportFileName: values.exportFileName,
         exportMode: values.exportMode,
       };

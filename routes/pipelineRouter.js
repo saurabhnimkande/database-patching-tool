@@ -14,7 +14,7 @@ router.post("/create", async (req, res) => {
       masterSchema,
       compareDatabase,
       compareSchema,
-      selectedTables,
+      selectedDataset,
       exportFileName,
       exportMode
     } = req.body;
@@ -37,7 +37,7 @@ router.post("/create", async (req, res) => {
       masterSchema,
       compareDatabase,
       compareSchema,
-      selectedTables,
+      selectedDataset,
       exportFileName,
       exportMode,
     };
