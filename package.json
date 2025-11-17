@@ -25,6 +25,7 @@
     "inquirer-file-selector": "^0.6.2",
     "nanospinner": "^1.2.2",
     "pg": "^8.14.1",
+    "socket.io": "^4.8.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

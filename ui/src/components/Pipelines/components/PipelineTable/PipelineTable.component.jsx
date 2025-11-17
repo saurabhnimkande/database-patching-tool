@@ -1,10 +1,10 @@
-import { Space, Table, Tooltip, Spin, Modal } from "antd";
-import { CaretRightOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Space, Table, Tooltip, Spin, Modal, Progress, Button } from "antd";
+import { CaretRightOutlined, DeleteOutlined, StopOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { axiosInstance } from "../../../../utils/axios";
 import styles from "./PipelineTable.module.css";
 
-export const PipelineTable = ({ onEditPipeline, showMessage }) => {
+export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses }) => {
   const [pipelines, setPipelines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -55,16 +55,41 @@ export const PipelineTable = ({ onEditPipeline, showMessage }) => {
     setPipelineToDelete(null);
   };
 
+  const handleStart = async (pipelineId) => {
+    try {
+      await axiosInstance.post(`/pipelines/${pipelineId}/start`);
+      socket.emit('join', pipelineId);
+    } catch (error) {
+      console.error('Error starting pipeline:', error);
+      showMessage('error', 'Failed to start pipeline');
+    }
+  };
+
+  const handleCancel = async (pipelineId) => {
+    try {
+      await axiosInstance.post(`/pipelines/${pipelineId}/cancel`);
+    } catch (error) {
+      console.error('Error cancelling pipeline:', error);
+      showMessage('error', 'Failed to cancel pipeline');
+    }
+  };
+
   const columns = [
     {
-      title: "",
-      width: "1rem",
-      key: "action-toggle",
-      render: () => (
-        <Space size="middle">
-          <Tooltip title="Start Pipeline">
-            <CaretRightOutlined className={styles.playButton} />
-          </Tooltip>
+      title: "Actions",
+      key: "actions",
+      width: 150,
+      render: (record) => (
+        <Space size="small">
+          {record.status !== 'Running' && record.status !== 'Cancelled' ? (
+            <Tooltip title="Start Pipeline">
+              <Button icon={<CaretRightOutlined />} type="text" onClick={() => handleStart(record.id)} />
+            </Tooltip>
+          ) : (
+            <Tooltip title="Cancel Pipeline">
+              <Button icon={<StopOutlined />} type="text" danger onClick={() => handleCancel(record.id)} />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -89,6 +114,18 @@ export const PipelineTable = ({ onEditPipeline, showMessage }) => {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status, record) => {
+        const running = progresses.find(p => p.id === record.id);
+        if (running && status === 'Running') {
+          return (
+            <div>
+              <Progress percent={running.progress} size="small" status={status === 'Failed' ? 'exception' : 'active'} />
+              <div>{running.status}</div>
+            </div>
+          );
+        }
+        return status;
+      },
     },
     {
       title: "Last Success",

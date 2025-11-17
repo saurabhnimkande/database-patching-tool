@@ -1,5 +1,6 @@
 import express from "express";
 import { savePipeline, getAllPipelines, getPipeline, updatePipeline, deletePipeline, pipelineExists } from "../utils/pipelineManager.js";
+import { startPipeline, cancelPipeline } from "../utils/pipelineExecutor.js";
 
 const router = express.Router();
 
@@ -154,6 +155,65 @@ router.delete("/:id", async (req, res) => {
     return res.status(200).send({
       status: "Success",
       message: "Pipeline deleted successfully",
+      result: {},
+    });
+  } catch (error) {
+    console.log("error:", error);
+    return res.status(500).send({
+      status: "Error",
+      message: error.message,
+      result: {},
+    });
+  }
+});
+
+router.post("/:id/start", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!(await pipelineExists(id))) {
+      return res.status(404).send({
+        status: "Error",
+        message: `Pipeline with id ${id} not found`,
+        result: {},
+      });
+    }
+
+    // Start pipeline asynchronously
+    startPipeline(id);
+
+    return res.status(200).send({
+      status: "Success",
+      message: "Pipeline started successfully",
+      result: {},
+    });
+  } catch (error) {
+    console.log("error:", error);
+    return res.status(500).send({
+      status: "Error",
+      message: error.message,
+      result: {},
+    });
+  }
+});
+
+router.post("/:id/cancel", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!(await pipelineExists(id))) {
+      return res.status(404).send({
+        status: "Error",
+        message: `Pipeline with id ${id} not found`,
+        result: {},
+      });
+    }
+
+    cancelPipeline(id);
+
+    return res.status(200).send({
+      status: "Success",
+      message: "Pipeline cancel requested",
       result: {},
     });
   } catch (error) {

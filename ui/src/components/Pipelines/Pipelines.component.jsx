@@ -2,7 +2,7 @@ import { InfoCard } from "./components/InfoCard/InfoCard.component";
 import { PipelineTable } from "./components/PipelineTable/PipelineTable.component";
 import styles from "./Pipelines.module.css";
 
-export const Pipelines = ({handleSelectedComponent, showMessage}) => {
+export const Pipelines = ({handleSelectedComponent, showMessage, updateProgress, progresses, socket}) => {
   const handleEditPipeline = (pipeline) => {
     handleSelectedComponent("create-new-pipeline", pipeline);
   };
@@ -14,7 +14,7 @@ export const Pipelines = ({handleSelectedComponent, showMessage}) => {
       iconLinkHover: "/icons/add-new-hover.png",
     },
     {
-      count: 1,
+      count: progresses ? progresses.length : 0,
       title: "In-Progress Pipelines",
       iconLink: "/icons/data.png",
     },
@@ -46,7 +46,7 @@ export const Pipelines = ({handleSelectedComponent, showMessage}) => {
         ))}
       </div>
       <div className={styles.pipelinesSubContainer}>
-        <PipelineTable onEditPipeline={handleEditPipeline} showMessage={showMessage} />
+        <PipelineTable onEditPipeline={handleEditPipeline} showMessage={showMessage} onProgressUpdate={updateProgress} socket={socket} progresses={progresses} />
       </div>
     </div>
   );

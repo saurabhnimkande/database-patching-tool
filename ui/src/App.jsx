@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 import { HeaderComponent } from "./components/header/header.component";
 import { Pipelines } from "./components/Pipelines/Pipelines.component";
@@ -8,6 +8,7 @@ import { CreatePipeline } from "./components/Pipelines/components/CreatePipeline
 import { DatabaseConfig } from "./components/DatabaseConfig/DatabaseConfig.component";
 import { LoadingOutlined } from "@ant-design/icons";
 import {ProgressIndicator} from "./components/ProgressIndicator/ProgressIndicator.component";
+import { io } from "socket.io-client";
 const { Header, Sider, Content } = Layout;
 
 function App() {
@@ -18,6 +19,10 @@ function App() {
   const [fullScreenLoadingMessage, setFullScreenLoadingMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [progresses, setProgresses] = useState([]);
+  console.log('progresses:', progresses);
+  const [pipelines, setPipelines] = useState([]);
+
+  const socketRef = useRef();
 
   const openNotification = (message = "", description = "", type = 'open') => {
     notificationApi[type]({
@@ -42,9 +47,20 @@ function App() {
     }
   };
 
+  const updateProgress = (pipelineId, name, progress, status) => {
+    setProgresses(prev => {
+      const existing = prev.find(p => p.id === pipelineId);
+      if (existing) {
+        return prev.map(p => p.id === pipelineId ? { ...p, progress, status } : p);
+      } else {
+        return [...prev, { id: pipelineId, name, progress, status }];
+      }
+    });
+  };
+
   const handleSelectedComponent = (componentName, pipelineData = null) => {
     if (componentName === "pipelines") {
-      setSelectedComponent(<Pipelines handleSelectedComponent={handleSelectedComponent} showMessage={showMessage} />);
+      setSelectedComponent(<Pipelines handleSelectedComponent={handleSelectedComponent} showMessage={showMessage} updateProgress={updateProgress} progresses={progresses} socket={socketRef.current} />);
       setSelectedComponentName("Pipelines");
     } else if (componentName === "create-new-pipeline") {
       setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} pipelineData={pipelineData} showMessage={showMessage} handleFullScreenLoading={handleFullScreenLoading} />);
@@ -59,13 +75,62 @@ function App() {
   };
 
   useEffect(() => {
+    // Establish socket connection
+    socketRef.current = io('http://localhost:3123');
+    console.log('socketRef.current:', socketRef.current);
+
+    socketRef.current.on('connect', () => {
+      console.log('Connected to server in App:', socketRef.current.id);
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('Disconnected from server in App');
+    });
+
     handleSelectedComponent("pipelines");
-    // Test data for progress indicator
-    setProgresses([
-      { id: 1, name: 'Patching users table', progress: 45 },
-      { id: 2, name: 'Seeding data for products', progress: 78 },
-    ]);
+
+    return () => {
+      socketRef.current.disconnect();
+    };
   }, []);
+
+  useEffect(() => {
+    // Fetch pipelines for lookup and set up progress listener
+    const fetchPipelines = async () => {
+      try {
+        const response = await fetch('http://localhost:3123/api/pipelines/list');
+        if (response.ok) {
+          const data = await response.json();
+          console.log('data:', data);
+          if (data.status === 'Success') {
+            setPipelines(data.result);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching pipelines:', error);
+      }
+    };
+    fetchPipelines();
+  }, []);
+
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    const handleProgress = (data) => {
+      const { pipelineId, status, progress, message } = data;
+      console.log('Received pipeline-progress in App:', pipelineId, status, progress, message);
+      const pipeline = pipelines.find(p => p.id === pipelineId);
+      if (pipeline) {
+        updateProgress(pipelineId, pipeline.name, progress || (status === 'Completed' ? 100 : 0), status);
+      }
+    };
+
+    socketRef.current.on('pipeline-progress', handleProgress);
+
+    return () => {
+      socketRef.current.off('pipeline-progress', handleProgress);
+    };
+  }, [pipelines]);
 
   return (
     <AntdApp>
