@@ -3,7 +3,7 @@ import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import styles from "./DatabaseConfig.module.css";
 import { useEffect, useState } from "react";
 import { AddNewDatabase } from "./AddNewDatabase/AddNewDatabase.component";
-import { axiosInstance } from "../../utils/axios.js";
+import { fetchDatabaseList, deleteDatabase } from "../../services/apiService.js";
 
 export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) => {
   const [addNewDatabaseFlag, setAddNewDatabaseFlag] = useState(false);
@@ -31,7 +31,7 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
   const fetchAddedDatabaseList = async () => {
     try {
       handleFullScreenLoading(true, "Fetching database list...");
-      const response = await axiosInstance.get("/db-config/database-list");
+      const response = await fetchDatabaseList();
       const resBody = response.data ?? {};
       let databaseList = resBody.result ?? [];
       console.log('databaseList:', databaseList);
@@ -45,10 +45,10 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
     }
   };
 
-  const deleteDatabase = async (name) => {
+  const performDeleteDatabase = async (name) => {
     try {
       handleFullScreenLoading(true, "Deleting database...");
-      await axiosInstance.delete(`/db-config/delete-database/${name}`);
+      await deleteDatabase(name);
       openNotification("Success", "Database deleted successfully", 'success');
       fetchAddedDatabaseList(); // Refresh the list
     } catch (error) {
@@ -66,7 +66,7 @@ export const DatabaseConfig = ({ handleFullScreenLoading, openNotification }) =>
 
   const handleDeleteConfirm = () => {
     if (databaseToDelete) {
-      deleteDatabase(databaseToDelete);
+      performDeleteDatabase(databaseToDelete);
     }
     setDeleteModalVisible(false);
     setDatabaseToDelete(null);

@@ -1,7 +1,7 @@
 import { Space, Table, Tooltip, Spin, Modal, Progress, Button } from "antd";
 import { CaretRightOutlined, DeleteOutlined, StopOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useState } from "react";
-import { axiosInstance } from "../../../../utils/axios";
+import { deletePipeline, startPipeline, cancelPipeline } from "../../../../services/apiService";
 import styles from "./PipelineTable.module.css";
 
 export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses, pipelines, fetchPipelines }) => {
@@ -15,7 +15,7 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses,
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(`/pipelines/${pipelineToDelete.id}`);
+      await deletePipeline(pipelineToDelete.id);
       showMessage('success', 'Pipeline deleted successfully');
       // Refresh the list
       await fetchPipelines();
@@ -35,7 +35,7 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses,
 
   const handleStart = async (pipelineId) => {
     try {
-      await axiosInstance.post(`/pipelines/${pipelineId}/start`);
+      await startPipeline(pipelineId);
       socket.emit('join', pipelineId);
       // Refresh table data to show updated status
       await fetchPipelines();
@@ -47,7 +47,7 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses,
 
   const handleCancel = async (pipelineId) => {
     try {
-      await axiosInstance.post(`/pipelines/${pipelineId}/cancel`);
+      await cancelPipeline(pipelineId);
       // Refresh table data to show updated status
       await fetchPipelines();
     } catch (error) {

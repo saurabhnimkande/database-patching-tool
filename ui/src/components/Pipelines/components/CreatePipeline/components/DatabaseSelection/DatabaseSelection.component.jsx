@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Form, Input, Select, Row, Col } from "antd";
 const { TextArea } = Input;
-import { axiosInstance } from "../../../../../../utils/axios";
+import { fetchDatabaseList, fetchDatabaseSchemas } from "../../../../../../services/apiService";
 import styles from "./DatabaseSelection.module.css";
 
 export const DatabaseSelection = ({ form, handleFullScreenLoading }) => {
@@ -17,7 +17,7 @@ export const DatabaseSelection = ({ form, handleFullScreenLoading }) => {
   const fetchDatabases = async () => {
     handleFullScreenLoading(true, "Loading databases...");
     try {
-      const response = await axiosInstance.get("/db-config/database-list");
+      const response = await fetchDatabaseList();
       if (response.data.status === "Success") {
         setDatabases(response.data.result);
       }
@@ -36,7 +36,7 @@ export const DatabaseSelection = ({ form, handleFullScreenLoading }) => {
 
     handleFullScreenLoading(true, message);
     try {
-      const response = await axiosInstance.get(`/db-config/database-schemas/${databaseName}`);
+      const response = await fetchDatabaseSchemas(databaseName);
       if (response.data.status === "Success") {
         setSchemas(response.data.result);
       }

@@ -2,7 +2,7 @@ import { Form, Input, Button, Switch } from "antd";
 const { TextArea } = Input;
 import styles from "./AddNewDatabase.module.css";
 import { useState, useEffect } from "react";
-import { axiosInstance } from "../../../utils/axios.js";
+import { testDatabaseConnection, addDatabase, updateDatabase } from "../../../services/apiService.js";
 
 export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBack, isEdit = false, initialData = null, onSuccess }) => {
   const [form] = Form.useForm();
@@ -33,7 +33,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
     try {
       const values = form.getFieldsValue();
       handleFullScreenLoading(true, "Testing connection...");
-      const response = await axiosInstance.post("/db-config/test-connection", values);
+      const response = await testDatabaseConnection(values);
       console.log("response:", response);
       const resBody = response.data ?? {};
       handleFullScreenLoading(false, "");
@@ -69,7 +69,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
     const now = new Date().toISOString();
     data.created_at = now;
     handleFullScreenLoading(true, "Adding database credentials...");
-    const response = await axiosInstance.post("/db-config/add-database", data);
+    const response = await addDatabase(data);
     const resBody = response.data ?? {};
     console.log("resBody:", resBody);
     handleFullScreenLoading(false, "");
@@ -81,7 +81,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
   const handleUpdateSubmit = async (data) => {
     data.updated_at = new Date().toISOString();
     handleFullScreenLoading(true, "Updating database credentials...");
-    const response = await axiosInstance.put(`/db-config/update-database/${data.name}`, data);
+    const response = await updateDatabase(data);
     const resBody = response.data ?? {};
     console.log("resBody:", resBody);
     handleFullScreenLoading(false, "");
@@ -101,7 +101,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
 
   return (
     <>
-      <Form form={form} labelCol={{ span: 5 }} wrapperCol={{ span: 14 }} layout="horizontal" style={{ maxWidth: "100%" }}>
+      <Form form={form} labelCol={{ span: 5 }} wrapperCol={{ span: 14 }} layout="horizontal" style={{ maxWidth: "100%" }} initialValues={{ type: "PostgreSQL" }}>
         <Form.Item
           label="Name"
           name="name"
@@ -111,7 +111,7 @@ export const AddNewDatabase = ({ handleFullScreenLoading, openNotification, goBa
         </Form.Item>
 
         <Form.Item label="Type" name="type">
-          <Input disabled defaultValue={"PostgreSQL"} />
+          <Input disabled />
         </Form.Item>
 
         <Form.Item

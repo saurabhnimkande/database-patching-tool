@@ -6,7 +6,7 @@ import { BasicSetup } from "./components/BasicSetup/BasicSetup.component";
 import { DatabaseSelection } from "./components/DatabaseSelection/DatabaseSelection.component";
 import { PipelineConfiguration } from "./components/PipelineConfiguration/PipelineConfiguration.component";
 import DatasetSelector from "./components/DatasetSelector/DatasetSelector.component";
-import { axiosInstance } from "../../../../utils/axios";
+import { fetchDatabaseTables, fetchDatabaseViews, createPipeline, updatePipeline } from "../../../../services/apiService";
 import { pipelineTypes } from "../../../../config/pipelineTypes.js";
 
 export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMessage, handleFullScreenLoading }) => {
@@ -115,10 +115,9 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
         const loadingText = `Loading ${isViews ? 'views' : 'tables'}...`;
         handleFullScreenLoading(true, loadingText);
         try {
-          const endpoint = isViews
-            ? `/db-config/database-views/${masterDatabase}/${masterSchema}`
-            : `/db-config/database-tables/${masterDatabase}/${masterSchema}`;
-          const response = await axiosInstance.get(endpoint);
+          const response = isViews
+            ? await fetchDatabaseViews(masterDatabase, masterSchema)
+            : await fetchDatabaseTables(masterDatabase, masterSchema);
           if (response.data.status === 'Success') {
             setAllDataset(response.data.result);
             // For editing: set picked tables to the saved selection, filtered to available tables
@@ -174,10 +173,10 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
       let response;
       if (pipelineData) {
         // Update existing pipeline
-        response = await axiosInstance.put(`/pipelines/${pipelineData.id}`, pipelinePayload);
+        response = await updatePipeline(pipelineData.id, pipelinePayload);
       } else {
         // Create new pipeline
-        response = await axiosInstance.post('/pipelines/create', pipelinePayload);
+        response = await createPipeline(pipelinePayload);
       }
 
       if (response.data.status === 'Success') {
