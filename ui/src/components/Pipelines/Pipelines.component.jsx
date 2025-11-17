@@ -2,7 +2,7 @@ import { InfoCard } from "./components/InfoCard/InfoCard.component";
 import { PipelineTable } from "./components/PipelineTable/PipelineTable.component";
 import styles from "./Pipelines.module.css";
 
-export const Pipelines = ({handleSelectedComponent, showMessage, updateProgress, progresses, socket}) => {
+export const Pipelines = ({handleSelectedComponent, showMessage, updateProgress, progresses, socket, pipelines, fetchPipelines}) => {
   const handleEditPipeline = (pipeline) => {
     handleSelectedComponent("create-new-pipeline", pipeline);
   };
@@ -46,7 +46,7 @@ export const Pipelines = ({handleSelectedComponent, showMessage, updateProgress,
         ))}
       </div>
       <div className={styles.pipelinesSubContainer}>
-        <PipelineTable onEditPipeline={handleEditPipeline} showMessage={showMessage} onProgressUpdate={updateProgress} socket={socket} progresses={progresses} />
+        <PipelineTable onEditPipeline={handleEditPipeline} showMessage={showMessage} onProgressUpdate={updateProgress} socket={socket} progresses={progresses} pipelines={pipelines} fetchPipelines={fetchPipelines} />
       </div>
     </div>
   );

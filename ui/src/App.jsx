@@ -13,14 +13,15 @@ const { Header, Sider, Content } = Layout;
 
 function App() {
   const [notificationApi, contextHolder] = notification.useNotification();
-  const [selectedComponent, setSelectedComponent] = useState(null);
+  const [currentView, setCurrentView] = useState('pipelines');
+  const [pipelineData, setPipelineData] = useState(null);
   const [selectedComponentName, setSelectedComponentName] = useState(null);
   const [fullScreenLoading, setFullScreenLoading] = useState(false);
   const [fullScreenLoadingMessage, setFullScreenLoadingMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [progresses, setProgresses] = useState([]);
-  console.log('progresses:', progresses);
   const [pipelines, setPipelines] = useState([]);
+  console.log('pipelines:', pipelines);
 
   const socketRef = useRef();
 
@@ -60,16 +61,17 @@ function App() {
 
   const handleSelectedComponent = (componentName, pipelineData = null) => {
     if (componentName === "pipelines") {
-      setSelectedComponent(<Pipelines handleSelectedComponent={handleSelectedComponent} showMessage={showMessage} updateProgress={updateProgress} progresses={progresses} socket={socketRef.current} />);
+      setCurrentView("pipelines");
       setSelectedComponentName("Pipelines");
     } else if (componentName === "create-new-pipeline") {
-      setSelectedComponent(<CreatePipeline handleSelectedComponent={handleSelectedComponent} pipelineData={pipelineData} showMessage={showMessage} handleFullScreenLoading={handleFullScreenLoading} />);
+      setCurrentView("create-new-pipeline");
+      setPipelineData(pipelineData);
       setSelectedComponentName(pipelineData ? "Edit Pipeline" : "Create New Pipeline");
     } else if (componentName === "db-config") {
-      setSelectedComponent(<DatabaseConfig handleSelectedComponent={handleSelectedComponent} handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} />);
+      setCurrentView("db-config");
       setSelectedComponentName("Database Configuration");
     } else {
-      setSelectedComponent(<div>Work in progress</div>);
+      setCurrentView("wip");
       setSelectedComponentName("Work in progress");
     }
   };
@@ -87,29 +89,28 @@ function App() {
       console.log('Disconnected from server in App');
     });
 
-    handleSelectedComponent("pipelines");
-
     return () => {
       socketRef.current.disconnect();
     };
   }, []);
 
+  const fetchPipelines = async () => {
+    try {
+      const response = await fetch('http://localhost:3123/api/pipelines/list');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'Success') {
+          setPipelines(data.result);
+        }
+      }
+      handleSelectedComponent("pipelines");
+    } catch (error) {
+      console.error('Error fetching pipelines:', error);
+    }
+  };
+
   useEffect(() => {
     // Fetch pipelines for lookup and set up progress listener
-    const fetchPipelines = async () => {
-      try {
-        const response = await fetch('http://localhost:3123/api/pipelines/list');
-        if (response.ok) {
-          const data = await response.json();
-          console.log('data:', data);
-          if (data.status === 'Success') {
-            setPipelines(data.result);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching pipelines:', error);
-      }
-    };
     fetchPipelines();
   }, []);
 
@@ -207,7 +208,12 @@ function App() {
             <Header style={{ lineHeight: "inherit" }}>
               <HeaderComponent selectedComponentName={selectedComponentName} />
             </Header>
-            <Content>{selectedComponent}</Content>
+            <Content>
+              {currentView === 'pipelines' && <Pipelines handleSelectedComponent={handleSelectedComponent} showMessage={showMessage} updateProgress={updateProgress} progresses={progresses} socket={socketRef.current} pipelines={pipelines} fetchPipelines={fetchPipelines} />}
+              {currentView === 'create-new-pipeline' && <CreatePipeline handleSelectedComponent={handleSelectedComponent} pipelineData={pipelineData} showMessage={showMessage} handleFullScreenLoading={handleFullScreenLoading} />}
+              {currentView === 'db-config' && <DatabaseConfig handleSelectedComponent={handleSelectedComponent} handleFullScreenLoading={handleFullScreenLoading} openNotification={openNotification} />}
+              {currentView === 'wip' && <div>Work in progress</div>}
+            </Content>
           </Layout>
           <ProgressIndicator progresses={progresses} />
         </Layout>

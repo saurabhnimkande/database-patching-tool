@@ -1,31 +1,12 @@
 import { Space, Table, Tooltip, Spin, Modal, Progress, Button } from "antd";
 import { CaretRightOutlined, DeleteOutlined, StopOutlined, DownloadOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { axiosInstance } from "../../../../utils/axios";
 import styles from "./PipelineTable.module.css";
 
-export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses }) => {
-  const [pipelines, setPipelines] = useState([]);
-  const [loading, setLoading] = useState(true);
+export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses, pipelines, fetchPipelines }) => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [pipelineToDelete, setPipelineToDelete] = useState(null);
-
-  useEffect(() => {
-    const fetchPipelines = async () => {
-      try {
-        const response = await axiosInstance.get('/pipelines/list');
-        if (response.data.status === 'Success') {
-          setPipelines(response.data.result);
-        }
-      } catch (error) {
-        console.error('Error fetching pipelines:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPipelines();
-  }, []);
 
   const handleDelete = (record) => {
     setPipelineToDelete(record);
@@ -37,10 +18,7 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses 
       await axiosInstance.delete(`/pipelines/${pipelineToDelete.id}`);
       showMessage('success', 'Pipeline deleted successfully');
       // Refresh the list
-      const response = await axiosInstance.get('/pipelines/list');
-      if (response.data.status === 'Success') {
-        setPipelines(response.data.result);
-      }
+      await fetchPipelines();
     } catch (error) {
       console.error('Error deleting pipeline:', error);
       showMessage('error', 'Failed to delete pipeline');
@@ -59,6 +37,8 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses 
     try {
       await axiosInstance.post(`/pipelines/${pipelineId}/start`);
       socket.emit('join', pipelineId);
+      // Refresh table data to show updated status
+      await fetchPipelines();
     } catch (error) {
       console.error('Error starting pipeline:', error);
       showMessage('error', 'Failed to start pipeline');
@@ -68,6 +48,8 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses 
   const handleCancel = async (pipelineId) => {
     try {
       await axiosInstance.post(`/pipelines/${pipelineId}/cancel`);
+      // Refresh table data to show updated status
+      await fetchPipelines();
     } catch (error) {
       console.error('Error cancelling pipeline:', error);
       showMessage('error', 'Failed to cancel pipeline');
@@ -158,13 +140,6 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses 
       ),
     },
   ];
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
 
   return (
     <>
