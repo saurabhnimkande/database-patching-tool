@@ -9,6 +9,7 @@ import { DatabaseConfig } from "./components/DatabaseConfig/DatabaseConfig.compo
 import { LoadingOutlined } from "@ant-design/icons";
 import {ProgressIndicator} from "./components/ProgressIndicator/ProgressIndicator.component";
 import { io } from "socket.io-client";
+import { fetchPipelines as apiFetchPipelines } from "./services/apiService";
 const { Header, Sider, Content } = Layout;
 
 function App() {
@@ -96,16 +97,14 @@ function App() {
 
   const fetchPipelines = async () => {
     try {
-      const response = await fetch('http://localhost:3123/api/pipelines/list');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === 'Success') {
-          setPipelines(data.result);
-        }
+      const response = await apiFetchPipelines();
+      if (response.data && response.data.status === 'Success') {
+        setPipelines(response.data.result);
       }
       handleSelectedComponent("pipelines");
     } catch (error) {
       console.error('Error fetching pipelines:', error);
+      handleSelectedComponent("pipelines");
     }
   };
 

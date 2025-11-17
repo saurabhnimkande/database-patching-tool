@@ -53,3 +53,7 @@ export const startPipeline = async (id) => {
 export const cancelPipeline = async (id) => {
   return await axiosInstance.post(`/pipelines/${id}/cancel`);
 };
+
+export const fetchPipelines = async () => {
+  return await axiosInstance.get('/pipelines/list');
+};
