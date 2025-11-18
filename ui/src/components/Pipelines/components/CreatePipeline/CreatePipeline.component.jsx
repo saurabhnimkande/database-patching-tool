@@ -149,7 +149,7 @@ export const CreatePipeline = ({ handleSelectedComponent, pipelineData, showMess
     };
 
     fetchData();
-  }, [masterDatabase, masterSchema, subType, pipelineData, handleFullScreenLoading, showMessage]);
+  }, [masterDatabase, masterSchema, subType, pipelineData]);
 
   const handleSave = async () => {
     try {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Progress, Typography } from "antd";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./ProgressIndicator.module.css";
 

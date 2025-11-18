@@ -51,6 +51,9 @@ function App() {
 
   const updateProgress = (pipelineId, name, progress, status) => {
     setProgresses(prev => {
+      if (status === 'Cancelled') {
+        return prev.filter(p => p.id !== pipelineId);
+      }
       const existing = prev.find(p => p.id === pipelineId);
       if (existing) {
         return prev.map(p => p.id === pipelineId ? { ...p, progress, status } : p);

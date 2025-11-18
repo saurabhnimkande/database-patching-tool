@@ -61,19 +61,22 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses,
       title: "Actions",
       key: "actions",
       width: 150,
-      render: (record) => (
-        <Space size="small">
-          {record.status !== 'Running' && record.status !== 'Cancelled' ? (
-            <Tooltip title="Start Pipeline">
-              <Button icon={<CaretRightOutlined />} type="text" onClick={() => handleStart(record.id)} />
-            </Tooltip>
-          ) : (
-            <Tooltip title="Cancel Pipeline">
-              <Button icon={<StopOutlined />} type="text" danger onClick={() => handleCancel(record.id)} />
-            </Tooltip>
-          )}
-        </Space>
-      ),
+      render: (record) => {
+        const running = progresses.find(p => p.id === record.id);
+        return (
+          <Space size="small">
+            {running?.status !== "Running" && running?.status !== "Cancelled" ? (
+              <Tooltip title="Start Pipeline">
+                <Button icon={<CaretRightOutlined />} type="text" onClick={() => handleStart(record.id)} />
+              </Tooltip>
+            ) : (
+              <Tooltip title="Cancel Pipeline">
+                <Button icon={<StopOutlined />} type="text" danger onClick={() => handleCancel(record.id)} />
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: "Name",
@@ -96,18 +99,6 @@ export const PipelineTable = ({ onEditPipeline, showMessage, socket, progresses,
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => {
-        const running = progresses.find(p => p.id === record.id);
-        if (running && status === 'Running') {
-          return (
-            <div>
-              <Progress percent={running.progress} size="small" status={status === 'Failed' ? 'exception' : 'active'} />
-              <div>{running.status}</div>
-            </div>
-          );
-        }
-        return status;
-      },
     },
     {
       title: "Last Success",

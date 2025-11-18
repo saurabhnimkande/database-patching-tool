@@ -33,18 +33,21 @@ export async function startPipeline(pipelineId) {
     await executePipeline(pipeline, pipelineId, controller.signal);
   } catch (error) {
     console.error('Pipeline error:', error);
-    await updatePipeline(pipelineId, { status: 'Failed' });
-    emitProgress(pipelineId, { status: 'Failed', message: error.message });
+    await updatePipeline(pipelineId, { status: 'Cancelled' });
+    emitProgress(pipelineId, { status: 'Cancelled', message: error.message });
   } finally {
     activeJobs.delete(pipelineId);
   }
 }
 
-export function cancelPipeline(pipelineId) {
+export async function cancelPipeline(pipelineId) {
   const job = activeJobs.get(pipelineId);
   if (job) {
     job.controller.abort();
     activeJobs.delete(pipelineId);
+    // Update status to Cancelled in config file
+    await updatePipeline(pipelineId, { status: 'Cancelled' });
+    emitProgress(pipelineId, { status: 'Cancelled', message: 'Pipeline cancelled' });
   }
 }
 
@@ -176,4 +179,3 @@ function emitProgress(pipelineId, data) {
 function emitFile(pipelineId, fileData) {
   io.to(pipelineId).emit('pipeline-file', { pipelineId, ...fileData });
 }
-
